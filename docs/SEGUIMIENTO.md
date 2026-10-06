@@ -44,11 +44,11 @@
 
 | Act. | Título | Estado | Nota (/20) | Commit |
 |---|---|---|---|---|
-| **0.1** | Recrear el proyecto con Compose | ✅ | — | (en la 0.3) |
+| **0.1** | Recrear el proyecto con Compose | 📦 | — | `bea0e7a` (en la 0.3) |
 | **0.2** | Entender la estructura del proyecto | ✅ | — | — |
-| **0.3** | Git y GitHub | ⬜ | — | |
-| **1.1** | Paquetes | ⬜ | | |
-| **1.2** | `enum class` | ⬜ | | |
+| **0.3** | Git y GitHub | 📦 | — | `bea0e7a` |
+| **1.1** | Paquetes | ✅ | | (con la 1.2) |
+| **1.2** | `enum class` | ✅ | | |
 | **1.3** | `data class` Task | ⬜ | | |
 | **1.4** | Reglas de negocio con `when` | ⬜ | | |
 | **1.5** | Tests unitarios | ⬜ | | |
@@ -87,7 +87,7 @@
 | **10.3** | GitHub Actions | ⬜ | | |
 | **10.4** | README y release | ⬜ | | |
 
-**Repositorio GitHub:** _(pendiente, Actividad 0.3)_
+**Repositorio GitHub:** https://github.com/AlbertoRVS/freemind
 
 ---
 
@@ -240,9 +240,106 @@ Lo que encontré en el proyecto vacío original:
 
 ---
 
+### Actividad 0.3 · Git y GitHub desde el primer día
+
+**Estado:** 📦 Subida  ·  **Revisión nº:** 1  ·  **Fecha:** 06/10/2026
+**Archivos revisados:** repositorio local (`git log`, `git status`, `git ls-files`), `.gitignore`, `app/.gitignore`
+
+#### ✅ Criterios de aceptación
+- [x] El repositorio existe y está conectado: `origin` = https://github.com/AlbertoRVS/freemind, rama `main` sincronizada con `origin/main`.
+- [x] `local.properties` **no** está en el repositorio (ni carpetas `build`): 51 archivos versionados.
+- [x] El commit tiene formato Conventional Commits: `bea0e7a chore: initial Compose project and course docs`.
+
+#### 🌟 Lo que está bien
+- Revisaste `git status` antes del commit y preguntaste lo que no entendías (avisos LF/CRLF, carpetas `build`). Eso es exactamente lo que hay que hacer.
+- Borraste la copia de seguridad antes del commit: el repositorio solo tiene lo que debe.
+- Rama `main` desde el principio (`git init -b main`).
+
+#### 💡 Sugerencias (opcional)
+- **Nombre del autor:** el commit aparece como `alberto_RVSÂ`, con un carácter raro al final (seguramente se coló al escribirlo). Corrígelo para los próximos commits con `git config --global user.name "..."` y compruébalo con `git config --global --list`. El commit ya subido déjalo así: cambiar historia que ya está en GitHub requiere `--force` y no compensa por esto.
+- **Email público:** el email del commit se ve en GitHub. Si prefieres ocultarlo, en GitHub ve a `Settings > Emails` y activa *Keep my email addresses private*. Te dará una dirección `...@users.noreply.github.com` para usar en `user.email`.
+- El punto 3 no hacía falta: `app/.gitignore` ya ignora la carpeta `build` del módulo. Aun así, añadir `/app/build` en la raíz no hace daño.
+
+#### 🔁 Historial de revisiones
+- Rev. 1 (06/10): repositorio creado y primer commit subido. **Aprobada.**
+
+#### 📦 Commit autorizado
+- [x] ✅ Hecho: `chore: initial Compose project and course docs` (`bea0e7a`). Esta ficha y la de la 0.2 se subirán en el siguiente commit de `docs`.
+
+---
+
 ## Fase 1 · Kotlin esencial
 
-_(sin fichas todavía)_
+### Actividad 1.1 · Paquetes y estructura de carpetas
+
+**Estado:** ✅ Aprobada  ·  **Revisión nº:** 1  ·  **Fecha:** 06/10/2026
+**Archivos revisados:** `app/src/main/java/com/alberto/freemind/` (estructura de carpetas), ramas de Git
+
+#### ✅ Criterios de aceptación
+- [x] Existen `data`, `domain` y `ui` dentro de `com.alberto.freemind`.
+- [x] `ui.theme` está dentro de `ui` (la plantilla ya lo dejó bien).
+- [x] La app sigue compilando: no se ha tocado código, solo carpetas.
+
+#### 🌟 Lo que está bien
+- Estructura exacta a la pedida y rama `fase-1` creada antes de empezar, como dice la guía.
+
+#### 💡 Sugerencias (opcional)
+- **Git no guarda carpetas vacías.** `data` y `domain` están vacías, así que ahora mismo no hay nada que subir de la 1.1. Entrarán en Git en cuanto tengan su primer archivo `.kt` (en la 1.2). Por eso el commit de la 1.1 va junto con el de la 1.2.
+- En Android Studio, si en el panel *Project* ves `com.alberto.freemind.data` en una sola línea, es la opción *Compact Middle Packages* (rueda dentada del panel). Es solo visual.
+- `SEGUIMIENTO.md` estaba modificado sin commit al crear la rama. No pasa nada: haz el commit `docs:` en `fase-1` y llegará a `main` con el Pull Request de la fase.
+
+#### 🔁 Historial de revisiones
+- Rev. 1 (06/10): estructura correcta. **Aprobada.**
+
+#### 📦 Commit autorizado
+- [x] ✅ Aprobada. Sin commit propio (carpetas vacías); va en el commit de la 1.2.
+
+
+---
+
+### Actividad 1.2 · `enum class`: tipos de tarea, frecuencia y espíritus
+
+**Estado:** ✅ Aprobada  ·  **Revisión nº:** 3  ·  **Fecha:** 06/10/2026
+**Archivos revisados:** `domain/Enums.kt`
+
+#### ✅ Criterios de aceptación
+- [x] `TaskType.MANDATORY.defaultCandies` devuelve `1` (Rev. 2)
+- [x] `TaskType.OPTIONAL.spirit` devuelve `Spirit.KODAMA` (Rev. 2)
+- [x] Nombres en inglés y comentario en español en cada enum (Rev. 3)
+
+#### 🌟 Lo que está bien
+- Los tres enums existen, con los valores correctos, en el paquete `domain`.
+- Has entendido lo difícil: un enum con propiedades y una propiedad cuyo tipo es otro enum (`Spirit`).
+- Los espíritus están bien asignados: `MANDATORY` libera `SUSUWATARI`, y `PUNCTUAL` y `OPTIONAL` liberan `KODAMA`.
+
+#### ❌ Errores (obligatorio corregir)
+> **Rev. 2:** ✅ los cuatro corregidos (5 caramelos, `defaultCandies`/`spirit`, sin clase envolvente y con comentarios KDoc).
+
+1. **`Enums.kt:7`**: `OPTIONAL` da 4 caramelos y el enunciado (y las decisiones del proyecto) dicen **5**.
+2. **`Enums.kt:4`**: los nombres de las propiedades no cumplen los criterios: el código del proyecto usará `defaultCandies` y `spirit`. Además, `enum` no dice qué guarda: un nombre debe explicar el dato, no su tipo.
+3. **`Enums.kt:3`**: la `class Enums { }` que envuelve todo sobra. En Kotlin un archivo puede tener varias declaraciones sueltas (a nivel superior) sin clase alrededor. Con la clase, para usarlo tendrías que escribir `Enums.TaskType.MANDATORY` en vez de `TaskType.MANDATORY`. Pista: fíjate en `ui/theme/Color.kt`, que tiene varias variables sin ninguna clase.
+4. **Faltan los comentarios** en español explicando cada enum (criterio de aceptación).
+
+#### ⚠️ A mejorar (obligatorio corregir)
+> **Rev. 2:** siguen pendientes los tres. Además, al quitar la clase la sangría se quedó desplazada (los `enum class` empiezan con 4 espacios): `Ctrl + Alt + L` lo arregla todo de golpe.
+> **Rev. 3:** ✅ los tres corregidos: `Frequency`, sin `()` ni `;` sobrantes y archivo formateado.
+
+1. **`Enums.kt:9`**: `Frecuency` → en inglés es `Frequency`. Las erratas en nombres se arrastran por todo el proyecto. Truco: `Shift + F6` sobre el nombre lo renombra en todos los sitios.
+2. **`Enums.kt:9 y 13`**: los paréntesis vacíos `()` sobran cuando el enum no tiene propiedades, y el `;` final solo es obligatorio si después hay funciones (míralo en el ejemplo `BookGenre`).
+3. **Formato**: `(val candy: Int,val enum: Spirit)` lleva espacio después de la coma, y no antes del paréntesis. `Ctrl + Alt + L` formatea el archivo entero.
+
+#### 💡 Sugerencias (opcional)
+- Detalles mínimos del archivo: hay dos líneas en blanco tras el `package` (con una basta) y en el comentario de `Spirit` falta la tilde de "espíritus".
+- Acostúmbrate a pulsar `Ctrl + Alt + L` antes de cada commit.
+- Para documentar, usa comentarios KDoc: `/** ... */` encima de la declaración. Android Studio los muestra al pasar el ratón por encima del nombre en cualquier parte del proyecto.
+
+#### 🔁 Historial de revisiones
+- Rev. 1 (06/10): estructura de enums correcta. Corregir caramelos de `OPTIONAL`, nombres de propiedades, clase envolvente, `Frequency` y comentarios.
+- Rev. 2 (06/10): errores corregidos. Pendientes `Frequency`, `()` y `;` sobrantes y formato.
+- Rev. 3 (06/10): todo corregido. **Aprobada.**
+
+#### 📦 Commit autorizado
+- [x] ✅ Aprobada. Un commit para 1.1 + 1.2 en `fase-1`, de tipo `feat(domain): ...` (descripción en inglés e imperativo, la escribe Alberto). El de `docs/SEGUIMIENTO.md`, aparte, con `docs:`.
 
 ## Fase 2 · Compose y tema Ghibli
 
@@ -298,4 +395,4 @@ _(sin fichas todavía)_
 
 | Fecha | Duda | Respuesta breve |
 |---|---|---|
-| | | |
+| 06/10 | ¿Comentarios de una línea: `/** */` o `//`? | `/** Texto */` (KDoc) para documentar clases, enums y funciones: se ve al pasar el ratón. `//` para notas dentro del código. Se cierra con `*/`, no con `**/`. |
