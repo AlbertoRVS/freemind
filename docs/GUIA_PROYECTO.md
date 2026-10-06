@@ -21,6 +21,7 @@ Esta guía es tu **libro de actividades**. Está dividida en **fases** y cada fa
 | ✅ **Criterios de aceptación** | Cómo sabremos que está bien hecho. Repásalos antes de pedirme corrección. |
 | 💡 **Pistas** | Por si te atascas. Léelas solo si lo necesitas. |
 | 📦 **Commit** | Mensaje de commit sugerido para cuando la actividad esté **aprobada**. |
+| 🧪 **Test opcional** | Un test para comprobar automáticamente lo que acabas de hacer, con su propio commit. No es obligatorio, pero es lo que más valoran en las empresas. |
 
 ### Flujo de trabajo de cada actividad
 
@@ -30,10 +31,21 @@ Esta guía es tu **libro de actividades**. Está dividida en **fases** y cada fa
 3. Me escribes en el hilo:  "Actividad X.Y lista"
 4. Reviso tus archivos y relleno su ficha en docs/SEGUIMIENTO.md.
 5. Corriges lo que te marque  ->  vuelvo a revisar.
-6. Cuando la ficha diga "✅ Aprobada, lista para commit", haces el commit y el push.
+6. Cuando la ficha diga "✅ Aprobada", haces el commit (y el del test, si lo hiciste) y el push.
 ```
 
 > 📌 **Regla de oro:** solo se hace commit de código **corregido y aprobado**. Así tu historial de Git queda limpio y profesional, que es lo que verán las empresas.
+
+### Cuándo hacer commit (y cómo llamarlo)
+
+- **Un commit por cada cosa que funciona por sí sola.** Normalmente es **una actividad = un commit**. Cuando una actividad sola no se puede usar ni probar (por ejemplo, las entidades sin sus conversores), se **agrupa** con la siguiente: la propia actividad te lo indica.
+- **Actividades de teoría** (sin código): no llevan commit.
+- **Tests opcionales:** van en un commit **aparte**, de tipo `test(...)`, justo después del commit de la actividad. Si haces el test antes de pedirme corrección, lo reviso junto con la actividad.
+- **`SEGUIMIENTO.md`:** cada vez que lo actualizo te aparecerá como modificado. Súbelo en su propio commit: `docs: update tracking for activity X.Y`.
+- **Orden de cada actividad aprobada:** `feat`/`chore` → `test` (si lo hiciste) → `docs` → `git push`.
+- **El mensaje:** `tipo(ámbito): descripción` en inglés, en **imperativo** y diciendo **qué aporta** (no qué archivos toca). Cada actividad trae su mensaje sugerido; puedes cambiarlo si mantiene el formato.
+- **Nombres de los tests:** que digan qué comprueban. En los tests de Kotlin se permiten frases entre comillas invertidas: ``fun `punctual task has two candies by default`()``.
+- **Al terminar cada fase:** Pull Request de `fase-N` a `main`.
 
 ### Si te atascas
 
@@ -339,6 +351,8 @@ Mueve el paquete `ui.theme` si la plantilla lo dejó en otro sitio.
 
 ✅ Los tres paquetes existen y la app sigue compilando.
 
+📦 **Commit:** junto con la 1.2 (las carpetas vacías no se suben a Git). ✔️ Hecho: `583b022`.
+
 ---
 
 ## Actividad 1.2 · `enum class`: tipos de tarea, frecuencia y espíritus
@@ -380,6 +394,10 @@ println(BookGenre.entries)       // lista con todos los valores
 - [ ] Nombres en inglés, comentario en español explicando cada enum.
 
 💡 **Pista:** una propiedad de un enum puede ser de tipo otro enum: `enum class X(val y: OtroEnum)`. Declara `Spirit` antes o después, a Kotlin le da igual.
+
+📦 **Commit (1.1 + 1.2):** `feat(domain): add task types, frequency and spirit enums`. ✔️ Hecho: `583b022`.
+
+🧪 **Test opcional:** no aplica: los enums se prueban en la 1.3 y la 1.5.
 
 ---
 
@@ -430,6 +448,11 @@ println(b2.returnDate?.dayOfMonth ?: "Sin fecha")
 - [ ] `Task(title = "Dentista", type = TaskType.PUNCTUAL).candies` vale `2` sin indicarlo.
 - [ ] Todas las propiedades son `val`.
 
+📦 **Commit** (cuando esté aprobada): `feat(domain): add Task model`
+
+🧪 **Test opcional:** en `app/src/test/.../domain/TaskTest.kt` comprueba con `assertEquals` que una Puntual tiene 2 caramelos por defecto, que si pasas `candies = 7` se respeta, y que `copy(title = ...)` solo cambia el título.
+Commit: `test(domain): add Task default values tests`
+
 ---
 
 ## Actividad 1.4 · Funciones, `when` y validación
@@ -474,6 +497,10 @@ fun BookGenre.label(): String = when (this) {
 - Comparar fechas: `fecha1.isBefore(fecha2)`, `fecha1 == fecha2`.
 - Recibir `today` como parámetro (en vez de llamar a `LocalDate.now()` dentro) es **a propósito**: así la función se puede testear con cualquier fecha. Esto es una buena práctica que gusta mucho en entrevistas.
 
+📦 **Commit** (cuando esté aprobada): `feat(domain): add task validation and pending rules`
+
+🧪 **Test:** los tests de estas reglas son la Actividad 1.5 (obligatoria).
+
 ---
 
 ## Actividad 1.5 · Tus primeros tests unitarios
@@ -514,7 +541,9 @@ class BookRulesTest {
 - [ ] Todos los tests pasan (clic derecho sobre la clase > Run).
 - [ ] Los nombres de los tests describen el comportamiento.
 
-📦 **Commits de la fase** (uno por actividad aprobada): `feat(domain): add task types, frequency and spirit enums`, `feat(domain): add Task model`, `feat(domain): add task validation and pending rules`, `test(domain): add TaskRules unit tests`.
+📦 **Commit** (cuando esté aprobada): `test(domain): add TaskRules unit tests` (incluye borrar `ExampleUnitTest`).
+
+🔀 **Fin de la Fase 1:** cuando todas sus actividades estén aprobadas y subidas, abre en GitHub el Pull Request de `fase-1` a `main` y pásame el enlace. Lo revisamos juntos y lo fusionas.
 
 ---
 
@@ -567,6 +596,10 @@ val Typography = Typography(
 
 ✅ La app arranca con tu fondo y tu fuente, en claro y en oscuro.
 
+📦 **Commit** (cuando esté aprobada): `feat(ui): add Ghibli color scheme and typography`
+
+🧪 **Test opcional:** no aplica: el tema se comprueba a ojo con `@Preview` en claro y oscuro.
+
 ---
 
 ## Actividad 2.2 · Composables, `Modifier` y `@Preview`
@@ -615,6 +648,11 @@ private fun BookCardPreview() {
 - [ ] `TaskCard` recibe un `modifier` como parámetro (buena práctica de Compose).
 - [ ] Los textos fijos ("caramelos", etc.) vienen de `strings.xml` con `stringResource(R.string.xxx)`.
 
+📦 **Commit** (cuando esté aprobada): `feat(ui): add TaskCard component`
+
+🧪 **Test opcional:** tu primer **test de interfaz** en `app/src/androidTest/.../ui/components/TaskCardTest.kt` (se ejecuta en el móvil o el emulador). Con `@get:Rule val rule = createComposeRule()` dibujas la tarjeta con `rule.setContent { TaskCard(...) }` y compruebas que se ve el título (`rule.onNodeWithText("...").assertIsDisplayed()`) y que una tarea sin descripción no la muestra (`assertDoesNotExist()`).
+Commit: `test(ui): add TaskCard UI tests`
+
 ---
 
 ## Actividad 2.3 · Estado: `remember` y `mutableStateOf`
@@ -649,6 +687,11 @@ fun BookScreen() {
 
 ✍️ **Enunciado:** añade a `TaskCard` un `Checkbox` o botón de completar. `TaskCard` recibirá `isDone: Boolean` y `onDoneClick: () -> Unit`. En la preview, controla el estado con `remember` y comprueba en **modo interactivo** de la preview que se marca y desmarca.
 
+📦 **Commit** (cuando esté aprobada): `feat(ui): add done checkbox to TaskCard`
+
+🧪 **Test opcional:** en `TaskCardTest`, pulsa el check con `performClick()` y comprueba que se llamó a `onDoneClick` (pista: una `var clicked = false` que la lambda pone a `true`).
+Commit: `test(ui): check TaskCard done click`
+
 ---
 
 ## Actividad 2.4 · Listas con `LazyColumn`
@@ -678,7 +721,11 @@ fun BookList(books: List<Book>, modifier: Modifier = Modifier) {
 
 ✅ La app muestra la lista con tu tema y se puede hacer scroll.
 
-📦 **Commits sugeridos:** `feat(ui): add Ghibli color scheme and typography`, `feat(ui): add TaskCard component`, `feat(ui): add task list with fake data`.
+📦 **Commit** (cuando esté aprobada): `feat(ui): add task list screen with fake data`
+
+🧪 **Test opcional:** no aplica: los datos son falsos y desaparecerán en la Fase 5.
+
+🔀 **Fin de la Fase 2:** cuando todas sus actividades estén aprobadas y subidas, abre en GitHub el Pull Request de `fase-2` a `main` y pásame el enlace. Lo revisamos juntos y lo fusionas.
 
 ---
 
@@ -717,6 +764,10 @@ dependencies { implementation(libs.androidx.navigation.compose) }
 💡 **Ojo con tu versión:** tu proyecto usa **AGP 9**, que trae Kotlin integrado; por eso en tu `build.gradle.kts` no verás el plugin `kotlin-android`. El plugin de serialización sí hay que añadirlo como se indica arriba.
 
 ✅ Gradle sincroniza sin errores.
+
+📦 **Commit** (cuando esté aprobada): `chore(deps): add navigation, serialization and extended icons`
+
+🧪 **Test opcional:** no aplica: basta con que el proyecto compile tras el Sync.
 
 ---
 
@@ -774,7 +825,12 @@ NavigationBar {
 - Para la barra inferior "de manual": `popUpTo(navController.graph.findStartDestination().id) { saveState = true }`, `launchSingleTop = true`, `restoreState = true`.
 - Haz una lista con los 4 destinos (`data class BottomDestination(val route: Any, val icon: ImageVector, @StringRes val label: Int)`) y recórrela con `forEach` para no repetir código.
 
-📦 **Commits:** `chore(deps): add navigation and serialization`, `feat(nav): add bottom navigation with four screens`.
+📦 **Commit** (cuando esté aprobada): `feat(nav): add bottom navigation with four screens`
+
+🧪 **Test opcional:** en `androidTest`, un test de interfaz que pulse la pestaña de la Isla (`onNodeWithText(...).performClick()`) y compruebe que aparece su pantalla.
+Commit: `test(nav): add bottom navigation UI test`
+
+🔀 **Fin de la Fase 3:** cuando todas sus actividades estén aprobadas y subidas, abre en GitHub el Pull Request de `fase-3` a `main` y pásame el enlace. Lo revisamos juntos y lo fusionas.
 
 ---
 
@@ -852,6 +908,10 @@ dependencies {
 
 ✅ Gradle sincroniza y la app compila.
 
+📦 **Commit** (cuando esté aprobada): `chore(deps): add Room and KSP`
+
+🧪 **Test opcional:** no aplica: basta con que compile.
+
 ---
 
 ## Actividad 4.2 · Entidades (`@Entity`)
@@ -890,6 +950,8 @@ data class LoanEntity(
 
 💡 **Pista:** ¿por qué `TaskEntity` y no reutilizar `Task` de `domain`? Separar el modelo de BBDD del modelo de dominio es una práctica habitual: la BBDD puede cambiar sin romper la app. Necesitarás funciones de conversión `fun TaskEntity.toDomain(): Task` y `fun Task.toEntity(): TaskEntity` (escríbelas en `data/local/mapper`).
 
+📦 **Commit:** junto con la 4.3 (las entidades con fechas necesitan los conversores).
+
 ---
 
 ## Actividad 4.3 · `TypeConverter` para fechas
@@ -913,6 +975,11 @@ class Converters {
 - `LocalDateTime` ↔ `Long` (pista: pasa por `Instant` y `ZoneId.systemDefault()`, guardando milisegundos).
 
 ❓ ¿Por qué guardar fechas como número y no como texto `"2026-10-05"`? Piensa en `ORDER BY` y en comparar con `>=`.
+
+📦 **Commit** (cuando esté aprobada): `feat(db): add entities and type converters` (4.2 + 4.3)
+
+🧪 **Test opcional:** en `app/src/test/.../data/local/ConvertersTest.kt` (test normal, no necesita Android) comprueba el "viaje de ida y vuelta": convertir un `LocalDate` a `Long` y de vuelta da la misma fecha. Igual con `LocalDateTime`.
+Commit: `test(db): add Converters unit tests`
 
 ---
 
@@ -967,6 +1034,8 @@ data class GenreCount(val genre: BookGenre, val total: Int)
 fun observeCountByGenre(): Flow<List<GenreCount>>
 ```
 
+📦 **Commit:** junto con la 4.5 (los DAOs no se pueden usar ni probar sin la base de datos).
+
 ---
 
 ## Actividad 4.5 · La base de datos (`@Database`)
@@ -1007,6 +1076,10 @@ ksp { arg("room.schemaLocation", "$projectDir/schemas") }
 ```
 
 ❓ ¿Para qué sirve el número `version` y qué pasaría si cambias una entidad sin subirlo? (Lo veremos de verdad en la Fase 9 con una migración.)
+
+📦 **Commit** (cuando esté aprobada): `feat(db): add DAOs and AppDatabase` (4.4 + 4.5)
+
+🧪 **Test:** el test de un DAO es la Actividad 4.6 (obligatoria).
 
 ---
 
@@ -1049,7 +1122,12 @@ class BookDaoTest {
 
 ✅ **Extra:** ejecuta la app y abre **App Inspection > Database Inspector** en Android Studio. ¡Puedes lanzar SQL a mano contra la BBDD del emulador!
 
-📦 **Commits:** `chore(deps): add Room and KSP`, `feat(db): add entities and type converters`, `feat(db): add DAOs`, `feat(db): add AppDatabase`, `test(db): add TaskCompletionDao tests`.
+📦 **Commit** (cuando esté aprobada): `test(db): add TaskCompletionDao tests`
+
+🧪 **Test opcional:** con la misma técnica de BBDD en memoria, prueba `TaskDao`: insertar una tarea y leerla por id devuelve lo mismo, y observar las Puntuales las da ordenadas por fecha.
+Commit: `test(db): add TaskDao tests`
+
+🔀 **Fin de la Fase 4:** cuando todas sus actividades estén aprobadas y subidas, abre en GitHub el Pull Request de `fase-4` a `main` y pásame el enlace. Lo revisamos juntos y lo fusionas.
 
 ---
 
@@ -1102,6 +1180,8 @@ val uiState: StateFlow<BooksUiState> = titles
 
 ✍️ **Enunciado:** no hay código aún. Responde en el hilo: ¿qué diferencia hay entre una función `suspend` y una que devuelve `Flow`? ¿Por qué el DAO de lectura devuelve `Flow` y el de escritura es `suspend`?
 
+📦 **Commit:** no hay (actividad teórica).
+
 ---
 
 ## Actividad 5.2 · El Repository
@@ -1114,6 +1194,11 @@ val uiState: StateFlow<BooksUiState> = titles
 - `suspend fun deleteTask(task: Task)`
 
 > 💼 **Nivel profesional (opcional):** define `TaskRepository` como `interface` y una implementación `OfflineTaskRepository`. Así en los tests podrás usar un repositorio falso. Lo usaremos en la Fase 10.
+
+📦 **Commit** (cuando esté aprobada): `feat(data): add TaskRepository`
+
+🧪 **Test opcional:** si has creado funciones de conversión (`toDomain()` / `toEntity()`), comprueba en un test normal que `task.toEntity().toDomain() == task`. Aquí el `data class` te regala el `equals()`.
+Commit: `test(data): add task mapper tests`
 
 ---
 
@@ -1140,6 +1225,10 @@ class LibraryApp : Application() {
 ```
 
 ✍️ **Enunciado:** crea `AppContainer` y tu clase `Application` (ej. `FreeMindApp`) y regístrala en el Manifest.
+
+📦 **Commit** (cuando esté aprobada): `feat(app): add AppContainer and Application class`
+
+🧪 **Test opcional:** no aplica: se comprueba al arrancar la app en la 5.4.
 
 ---
 
@@ -1194,7 +1283,12 @@ fun ComicsScreen(viewModel: ComicsViewModel = viewModel(factory = ComicsViewMode
 - [ ] Al cerrar y abrir la app, las tareas siguen ahí (¡persistencia!).
 - [ ] La pantalla no llama nunca a un DAO directamente.
 
-📦 **Commits:** `feat(data): add TaskRepository`, `feat(app): add AppContainer and Application class`, `feat(punctual): connect punctual screen to database`.
+📦 **Commit** (cuando esté aprobada): `feat(punctual): connect punctual screen to database`
+
+🧪 **Test opcional:** en `androidTest`, dibuja `PunctualContent` con un estado de lista vacía y comprueba que aparece el mensaje amable. Aquí ves la ventaja de separar `Screen` y `Content`: se puede probar sin base de datos.
+Commit: `test(punctual): add empty state UI test`
+
+🔀 **Fin de la Fase 5:** cuando todas sus actividades estén aprobadas y subidas, abre en GitHub el Pull Request de `fase-5` a `main` y pásame el enlace. Lo revisamos juntos y lo fusionas.
 
 ---
 
@@ -1254,6 +1348,11 @@ OutlinedTextField(
 - El ViewModel puede leer los argumentos de la ruta con `SavedStateHandle`: `savedStateHandle.toRoute<TaskFormRoute>()`.
 - Para reaccionar a `isSaved` en la UI: `LaunchedEffect(state.isSaved) { if (state.isSaved) onDone() }`.
 
+📦 **Commit** (cuando esté aprobada): `feat(tasks): add create/edit task form`
+
+🧪 **Test opcional:** en `androidTest`, dibuja el contenido del formulario con el título vacío, pulsa Guardar y comprueba que se ve el mensaje de error.
+Commit: `test(tasks): add task form validation UI test`
+
 ---
 
 ## Actividad 6.2 · Pantallas de Obligatorias y Opcionales
@@ -1266,6 +1365,11 @@ OutlinedTextField(
 
 ❓ ¿Cómo sabe la pantalla de Obligatorias que ha cambiado el día si la app se queda abierta a medianoche? (Piénsalo; hay una solución sencilla y otra elegante. Lo hablamos.)
 
+📦 **Commit** (cuando esté aprobada): `feat(tasks): add mandatory and optional screens`
+
+🧪 **Test opcional:** si sacas a `domain` la lógica que separa Pendientes y Hechas (una función pura que recibe tareas, últimas fechas y `today`), pruébala con un test normal con fechas fijas.
+Commit: `test(domain): add pending and done split tests`
+
 ---
 
 ## Actividad 6.3 · Borrar con confirmación
@@ -1277,7 +1381,11 @@ OutlinedTextField(
 - [ ] No se puede guardar una tarea inválida y el error se ve junto al campo.
 - [ ] Al girar la pantalla en mitad del formulario no se pierden los datos.
 
-📦 **Commits:** `feat(tasks): add create/edit task form`, `feat(mandatory): add pending and done sections`, `feat(optional): add optional tasks screen`, `feat(tasks): add delete with confirmation`.
+📦 **Commit** (cuando esté aprobada): `feat(tasks): add delete with confirmation`
+
+🧪 **Test opcional:** no aplica: se prueba a mano (deslizar, cancelar, confirmar).
+
+🔀 **Fin de la Fase 6:** cuando todas sus actividades estén aprobadas y subidas, abre en GitHub el Pull Request de `fase-6` a `main` y pásame el enlace. Lo revisamos juntos y lo fusionas.
 
 ---
 
@@ -1312,6 +1420,11 @@ db.withTransaction {           // de room-ktx
 2. `suspend fun undoCompletion(...)` para poder deshacer (Puntuales: desarchivar; Obligatorias: borrar la completion de hoy/esta semana).
 3. Conecta el check de `TaskCard` en las 3 pantallas.
 
+📦 **Commit** (cuando esté aprobada): `feat(candies): complete and undo tasks in a transaction`
+
+🧪 **Test opcional:** en `androidTest`, con BBDD en memoria: completar una Puntual la archiva y guarda una completion con sus caramelos; deshacer la desarchiva.
+Commit: `test(data): add complete and undo tests`
+
 ---
 
 ## Actividad 7.2 · El saldo de caramelos siempre visible
@@ -1319,6 +1432,11 @@ db.withTransaction {           // de room-ktx
 ✍️ **Enunciado:**
 1. `CandyRepository` (o dentro de otro repositorio, tú decides y lo justificas) con `fun observeBalance(): Flow<Int>` combinando ganados − gastados.
 2. Muestra el saldo en la `TopAppBar` de todas las pantallas (ej. `🍬 23`). Piensa **qué ViewModel** debería exponerlo si está en el `Scaffold` común.
+
+📦 **Commit** (cuando esté aprobada): `feat(candies): show candy balance in top bar`
+
+🧪 **Test opcional:** con BBDD en memoria, comprueba que el saldo es ganados − gastados (inserta completions y un canje a mano).
+Commit: `test(data): add candy balance tests`
 
 ---
 
@@ -1348,7 +1466,11 @@ scope.launch {
 - [ ] Una Obligatoria diaria completada hoy pasa a "Hechas" y mañana vuelve a "Pendientes".
 - [ ] Una Opcional se puede completar varias veces y suma cada vez.
 
-📦 **Commits:** `feat(candies): complete tasks in a transaction`, `feat(candies): show candy balance`, `feat(candies): add rescue snackbar with undo`.
+📦 **Commit** (cuando esté aprobada): `feat(candies): add rescue snackbar with undo`
+
+🧪 **Test opcional:** no aplica: se prueba a mano.
+
+🔀 **Fin de la Fase 7:** cuando todas sus actividades estén aprobadas y subidas, abre en GitHub el Pull Request de `fase-7` a `main` y pásame el enlace. Lo revisamos juntos y lo fusionas.
 
 ---
 
@@ -1357,6 +1479,10 @@ scope.launch {
 ## Actividad 8.1 · Catálogo de recompensas
 
 ✍️ **Enunciado:** en la pantalla Isla, una sección **Catálogo** con las recompensas (nombre, descripción, coste en 🍬) y un formulario para crear/editar/borrar recompensas (reutiliza lo aprendido en la Fase 6). Ejemplos para probar: "1 h de videojuegos" (6 🍬), "Tarde de hobby" (10 🍬), "Capítulo de serie" (3 🍬).
+
+📦 **Commit** (cuando esté aprobada): `feat(island): add rewards catalog`
+
+🧪 **Test opcional:** no aplica: es el mismo patrón que el formulario de la Fase 6.
 
 ## Actividad 8.2 · Canjear
 
@@ -1379,6 +1505,11 @@ when (val r = repository.lend(book)) {
 }
 ```
 
+📦 **Commit** (cuando esté aprobada): `feat(island): redeem rewards with balance check`
+
+🧪 **Test opcional:** **muy recomendado.** Con BBDD en memoria, comprueba que el repositorio **rechaza** un canje si el saldo no llega y que no inserta nada. Es la "doble seguridad" del enunciado.
+Commit: `test(island): add redemption balance check tests`
+
 ## Actividad 8.3 · Historial de canjes
 
 ✍️ **Enunciado:** sección **Historial** con los canjes ordenados del más reciente al más antiguo: nombre de la recompensa, coste y fecha formateada en español (ej. "lun 5 oct, 18:30").
@@ -1386,6 +1517,11 @@ when (val r = repository.lend(book)) {
 💡 **Pistas**
 - Necesitas datos de dos tablas: `JOIN` en el `@Query` y una `data class` de resultado, **o** una relación de Room con `@Relation`. Prueba con `JOIN`: es SQL que ya conoces.
 - Formatear: `DateTimeFormatter.ofPattern("EEE d MMM, HH:mm", Locale("es", "ES"))`.
+
+📦 **Commit** (cuando esté aprobada): `feat(island): add redemption history`
+
+🧪 **Test opcional:** saca el formateo de fecha a una función y comprueba en un test normal que `LocalDateTime.of(2026, 10, 5, 18, 30)` da `"lun 5 oct, 18:30"`.
+Commit: `test(island): add history date format test`
 
 ## Actividad 8.4 · Los espíritus de la semana
 
@@ -1401,7 +1537,12 @@ when (val r = repository.lend(book)) {
 - [ ] El saldo nunca puede quedar negativo.
 - [ ] El recuento semanal es correcto (pruébalo cambiando la fecha del emulador).
 
-📦 **Commits:** `feat(island): add rewards catalog`, `feat(island): redeem rewards with balance check`, `feat(island): add redemption history`, `feat(island): show spirits rescued this week`.
+📦 **Commit** (cuando esté aprobada): `feat(island): show spirits rescued this week`
+
+🧪 **Test opcional:** prueba la función que calcula "el lunes de esta semana a las 00:00" con un miércoles, un lunes y un domingo.
+Commit: `test(island): add start of week tests`
+
+🔀 **Fin de la Fase 8:** cuando todas sus actividades estén aprobadas y subidas, abre en GitHub el Pull Request de `fase-8` a `main` y pásame el enlace. Lo revisamos juntos y lo fusionas.
 
 ---
 
@@ -1433,6 +1574,10 @@ fun Sun(modifier: Modifier = Modifier) {
 
 ✍️ **Enunciado:** crea `SusuwatariIcon` y `KodamaIcon` con `Canvas` y úsalos en la Isla y en el snackbar/tarjetas.
 
+📦 **Commit** (cuando esté aprobada): `feat(ui): draw susuwatari and kodama with Canvas`
+
+🧪 **Test opcional:** no aplica: se comprueba con `@Preview`.
+
 ## Actividad 9.2 · Animaciones
 
 ✍️ **Enunciado** (elige al menos 3):
@@ -1440,6 +1585,10 @@ fun Sun(modifier: Modifier = Modifier) {
 - El contador de caramelos anima el número al cambiar (`animateIntAsState` o `AnimatedContent`).
 - Las tarjetas completadas se desvanecen (`AnimatedVisibility`, `animateItem()` en `LazyColumn`).
 - El Kodama gira la cabeza (`graphicsLayer { rotationZ = ... }`), como en *La Princesa Mononoke*.
+
+📦 **Commit** (cuando esté aprobada): `feat(ui): add animations`
+
+🧪 **Test opcional:** no aplica.
 
 ## Actividad 9.3 · Icono, splash y modo oscuro
 
@@ -1449,11 +1598,20 @@ fun Sun(modifier: Modifier = Modifier) {
 3. Revisa todas las pantallas en modo oscuro ("bosque de noche").
 4. Revisa accesibilidad: `contentDescription` en iconos que significan algo y tamaño mínimo de botones (48 dp).
 
+📦 **Commit** (cuando esté aprobada): `feat(app): add adaptive icon, splash screen and dark mode fixes`
+
+🧪 **Test opcional:** no aplica: revisión visual y de accesibilidad.
+
 ## Actividad 9.4 · Tu primera migración de BBDD
 
 ✍️ **Enunciado:** añade un campo nuevo (por ejemplo `emoji` en `RewardEntity`, para que cada recompensa tenga su icono). Sube `version` a 2 y escribe una `Migration(1, 2)` con `ALTER TABLE`. Comprueba que **no pierdes los datos** que ya tenías en el móvil.
 
-📦 **Commits:** `feat(ui): draw susuwatari and kodama with Canvas`, `feat(ui): add animations`, `feat(app): add adaptive icon and splash screen`, `feat(db): migrate to v2 with reward emoji`.
+📦 **Commit** (cuando esté aprobada): `feat(db): add reward emoji with migration to v2`
+
+🧪 **Test opcional:** un test de migración con `MigrationTestHelper` (librería `androidx.room:room-testing`) que cree la BBDD en versión 1, la migre a la 2 y compruebe que los datos siguen ahí.
+Commit: `test(db): add migration 1 to 2 test`
+
+🔀 **Fin de la Fase 9:** cuando todas sus actividades estén aprobadas y subidas, abre en GitHub el Pull Request de `fase-9` a `main` y pásame el enlace. Lo revisamos juntos y lo fusionas.
 
 ---
 
@@ -1491,13 +1649,23 @@ val vm: ComicsViewModel = hiltViewModel()
 
 ✍️ **Enunciado:** migra la app a Hilt y **elimina** `AppContainer` y las `Factory` de los ViewModels.
 
+📦 **Commit** (cuando esté aprobada): `refactor(di): migrate to Hilt`
+
+🧪 **Test:** no hay test nuevo, pero ejecuta **todos** los que tengas: un `refactor` no debe romper ninguno.
+
 ## Actividad 10.2 · Tests de ViewModel
 
 ✍️ **Enunciado:** crea un `FakeTaskRepository` (implementa tu interfaz con listas en memoria) y testea `MandatoryViewModel`: que separa bien pendientes y hechas, y que al completar una tarea cambia de sección. Para inyectar "hoy", usa un `java.time.Clock` en el constructor (igual que hicimos con `today` en la Fase 1).
 
+📦 **Commit** (cuando esté aprobada): `test(vm): add MandatoryViewModel tests` (si antes tienes que convertir `TaskRepository` en interfaz, hazlo en un commit previo: `refactor(data): extract TaskRepository interface`).
+
 ## Actividad 10.3 · Integración continua con GitHub Actions
 
 ✍️ **Enunciado:** crea `.github/workflows/android.yml` que, en cada push y Pull Request, compile la app y ejecute los tests unitarios (`./gradlew testDebugUnitTest assembleDebug`). Añade el *badge* al README.
+
+📦 **Commit** (cuando esté aprobada): `ci: add GitHub Actions build and test workflow`
+
+🧪 **Test:** el propio workflow ejecuta todos tus tests en cada push.
 
 ## Actividad 10.4 · README de portfolio y release
 
@@ -1506,7 +1674,9 @@ val vm: ComicsViewModel = hiltViewModel()
 2. Genera un APK firmado (`Build > Generate Signed App Bundle / APK`). **Nunca** subas el keystore ni sus contraseñas a GitHub.
 3. Crea una **Release** en GitHub con el APK adjunto.
 
-📦 **Commits:** `refactor(di): migrate to Hilt`, `test(vm): add MandatoryViewModel tests`, `ci: add GitHub Actions build and test`, `docs: add portfolio README`.
+📦 **Commit** (cuando esté aprobada): `docs: add portfolio README`. Después, la Release en GitHub con su etiqueta (`v1.0.0`).
+
+🔀 **Fin de la Fase 10:** cuando todas sus actividades estén aprobadas y subidas, abre en GitHub el Pull Request de `fase-10` a `main` y pásame el enlace. Lo revisamos juntos y lo fusionas.
 
 ---
 

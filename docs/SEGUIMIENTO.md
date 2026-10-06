@@ -47,9 +47,9 @@
 | **0.1** | Recrear el proyecto con Compose | 📦 | — | `bea0e7a` (en la 0.3) |
 | **0.2** | Entender la estructura del proyecto | ✅ | — | — |
 | **0.3** | Git y GitHub | 📦 | — | `bea0e7a` |
-| **1.1** | Paquetes | ✅ | | (con la 1.2) |
-| **1.2** | `enum class` | ✅ | | |
-| **1.3** | `data class` Task | ⬜ | | |
+| **1.1** | Paquetes | 📦 | | `583b022` |
+| **1.2** | `enum class` | 📦 | | `583b022` |
+| **1.3** | `data class` Task | ✅ | | |
 | **1.4** | Reglas de negocio con `when` | ⬜ | | |
 | **1.5** | Tests unitarios | ⬜ | | |
 | **2.1** | Tema Ghibli | ⬜ | | |
@@ -340,6 +340,48 @@ Lo que encontré en el proyecto vacío original:
 
 #### 📦 Commit autorizado
 - [x] ✅ Aprobada. Un commit para 1.1 + 1.2 en `fase-1`, de tipo `feat(domain): ...` (descripción en inglés e imperativo, la escribe Alberto). El de `docs/SEGUIMIENTO.md`, aparte, con `docs:`.
+- 📦 Subido a `fase-1`: `583b022 feat(domain): add domain package and Enums file` y `0155fb9 docs: reuploaded SEGUIMIENTO`.
+  - 💡 Mensajes: el `feat` es válido, pero mejor describir **qué aporta** que qué archivos crea (`add TaskType, Frequency and Spirit enums`). El `docs` va en pasado y es vago: en imperativo y concreto sería `docs: update tracking for activities 0.2-1.2`. No se corrigen porque ya están en GitHub.
+
+---
+
+### Actividad 1.3 · `data class` y null safety: el modelo `Task`
+
+**Estado:** ✅ Aprobada  ·  **Revisión nº:** 2  ·  **Fecha:** 06/10/2026
+**Archivos revisados:** `domain/Task.kt`, `test/.../domain/TaskTest.kt`
+
+#### ✅ Criterios de aceptación
+- [x] `Task(title = "Dentista", type = TaskType.PUNCTUAL).candies` vale `2` sin indicarlo (comprobado con su test, Rev. 2)
+- [x] Todas las propiedades son `val`
+
+#### 🌟 Lo que está bien
+- `candies: Int = type.defaultCandies`: has usado un parámetro anterior como valor por defecto. Es la parte más difícil de la actividad.
+- Todas las propiedades son `val`, los nombres y tipos son los de la tabla, y has importado `java.time.LocalDate`.
+- `dueDate: LocalDate? = null` está perfecto.
+
+#### ❌ Errores (obligatorio corregir)
+> **Rev. 2:** ✅ corregidos: `data class` y `frequency: Frequency? = null`.
+
+1. **`Task.kt:5`**: es `class`, y el enunciado pide `data class`. Sin `data` no tienes `copy()`, `toString()` ni `equals()` automáticos. Pista: compara dos `Task` iguales con `==`; con `class` da `false`.
+2. **`Task.kt:12`**: `frequency: Frequency?` no tiene valor por defecto, así que es obligatorio pasarlo y `Task(title = "Dentista", type = TaskType.PUNCTUAL)` no compila. Mira cómo lo hiciste en `dueDate`.
+
+#### ⚠️ A mejorar (obligatorio corregir)
+> **Rev. 2:** ✅ corregidos: comentario y llaves eliminados.
+
+1. **`Task.kt:7`**: borra el comentario `//como lo hago obligatorio?`. `title` **ya es obligatorio**: un parámetro sin valor por defecto hay que pasarlo siempre.
+2. **`Task.kt:14-15`**: las llaves vacías `{ }` sobran cuando la clase no tiene cuerpo.
+
+#### 💡 Sugerencias (opcional)
+- 🌟 **Rev. 2: primer test propio** (`TaskTest`), con JUnit 4 y plantillas de String. Para que entre en el commit: añadir `assertEquals(2, task1.candies)` (un test sin comprobación nunca falla), darle un nombre que diga qué comprueba (no `getCandies`) y formatear con `Ctrl + Alt + L`.
+- Añade un comentario KDoc encima de `Task` explicando qué representa, como hiciste en los enums.
+- Prueba tu código con un **test unitario** en `app/src/test/.../domain/TaskTest.kt` (ver Diario de dudas).
+
+#### 🔁 Historial de revisiones
+- Rev. 1 (06/10): buena base. Falta `data`, valor por defecto en `frequency`, comentario sobrante y llaves vacías.
+- Rev. 2 (06/10): todo corregido y primer test creado. **Aprobada.**
+
+#### 📦 Commit autorizado
+- [x] ✅ Aprobada. En `fase-1`, según la guía actualizada: `feat(domain): add Task model` (solo `Task.kt`), después `test(domain): add Task default values tests` (`TaskTest.kt`, con su `assertEquals`) y `docs: update tracking for activity 1.3`.
 
 ## Fase 2 · Compose y tema Ghibli
 
@@ -385,7 +427,7 @@ _(sin fichas todavía)_
 
 | Error | Dónde apareció | Cómo evitarlo |
 |---|---|---|
-| | | |
+| No ceñirse a los nombres/valores del enunciado | 1.2 | Antes de pedir corrección, repasa los ✅ Criterios de aceptación uno por uno. |
 
 ---
 
@@ -395,4 +437,7 @@ _(sin fichas todavía)_
 
 | Fecha | Duda | Respuesta breve |
 |---|---|---|
+| 06/10 | ¿Cómo hago obligatorio un parámetro? | No dándole valor por defecto: `val title: String` ya es obligatorio. |
+| 06/10 | ¿Diferencia entre `Tipo?` y `Tipo? = null`? | `?` = **puede** valer null (tipo). `= null` = valor **por defecto** (se puede omitir al crear el objeto). Son cosas distintas y se combinan. |
+| 06/10 | ¿Cómo pruebo mi código? | Tests unitarios en `app/src/test`: función con `@Test` y `assertEquals(esperado, real)`, se ejecuta con la flecha verde. |
 | 06/10 | ¿Comentarios de una línea: `/** */` o `//`? | `/** Texto */` (KDoc) para documentar clases, enums y funciones: se ve al pasar el ratón. `//` para notas dentro del código. Se cierra con `*/`, no con `**/`. |
