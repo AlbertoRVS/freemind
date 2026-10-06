@@ -1,0 +1,152 @@
+==============================================================
+  CHULETA DE TERMINAL (Git Bash) Y GIT  ·  Proyecto FreeMind
+==============================================================
+
+Lo que va detrás de # es un comentario: no se escribe.
+<algo> significa "pon aquí tu valor" (sin los < >).
+
+Un detalle de Git Bash: las rutas se escriben con / y el disco
+como /c/, por ejemplo cd /c/Users/PC/AndroidStudioProjects/FreeMind
+
+--------------------------------------------------------------
+ 1. MOVERSE POR LAS CARPETAS
+--------------------------------------------------------------
+
+pwd                      # ¿Dónde estoy? Muestra la carpeta actual
+ls                       # Lista lo que hay en la carpeta actual
+ls -a                    # Lista también los ocultos (.git, .gitignore...)
+ls -l                    # Lista con detalles (tamaño, fecha)
+
+cd <carpeta>             # Entra en una carpeta (que esté dentro de la actual)
+cd ..                    # Sube una carpeta (vuelve a la "carpeta padre")
+cd ../..                 # Sube dos carpetas
+cd ~                     # Va a tu carpeta personal (C:\Users\PC)
+cd                       # Igual que cd ~
+cd -                     # Vuelve a la carpeta en la que estabas antes
+
+# Ir directamente al proyecto (en Git Bash el disco C: se escribe /c/):
+cd /c/Users/PC/AndroidStudioProjects/FreeMind
+
+# Si una carpeta tiene espacios, ponla entre comillas:
+cd "Mis Documentos"
+
+TRUCO 1: escribe el principio del nombre y pulsa TAB: se autocompleta.
+         Pulsa TAB dos veces si hay varias opciones y te las enseña.
+TRUCO 2: flecha ARRIBA = repetir comandos anteriores.
+TRUCO 3: en el Explorador de Windows, clic derecho dentro de una carpeta
+         > "Open Git Bash here": abre la terminal ya en esa carpeta.
+
+
+--------------------------------------------------------------
+ 2. ARCHIVOS Y CARPETAS
+--------------------------------------------------------------
+
+mkdir <carpeta>          # Crea una carpeta
+touch <archivo>          # Crea un archivo vacío
+cat <archivo>            # Muestra el contenido de un archivo
+cp <origen> <destino>    # Copia un archivo
+mv <origen> <destino>    # Mueve o renombra un archivo
+rm <archivo>             # Borra un archivo (¡no va a la papelera!)
+code . / explorer .      # Abre la carpeta actual en VS Code / Explorador
+
+
+--------------------------------------------------------------
+ 3. TERMINAL: UTILIDADES
+--------------------------------------------------------------
+
+clear                    # Limpia la pantalla (o Ctrl + L)
+Ctrl + C                 # Cancela el comando que se está ejecutando
+q                        # Sale de pantallas largas (git log, git diff...)
+Copiar / pegar           # Ctrl + Insert / Shift + Insert
+                         # (o clic derecho > Copy / Paste)
+exit                     # Cierra la terminal
+
+
+--------------------------------------------------------------
+ 4. GIT: CONFIGURACIÓN (solo una vez por ordenador)
+--------------------------------------------------------------
+
+git --version                                   # ¿Está instalado Git?
+git config --global user.name "<Tu Nombre>"
+git config --global user.email "<email-de-github>"
+git config --global init.defaultBranch main     # Rama principal = main
+git config --global core.autocrlf true          # Saltos de línea en Windows
+git config --global --list                      # Ver la configuración
+
+
+--------------------------------------------------------------
+ 5. GIT: EMPEZAR UN REPOSITORIO
+--------------------------------------------------------------
+
+git init -b main                     # Convierte la carpeta actual en repo Git
+git clone <url>                      # Descarga un repo de GitHub (crea carpeta)
+git remote add origin <url>          # Conecta tu repo local con GitHub
+git remote -v                        # ¿Con qué GitHub está conectado?
+
+
+--------------------------------------------------------------
+ 6. GIT: EL CICLO DE CADA DÍA
+--------------------------------------------------------------
+
+    Tus archivos --add--> Preparados --commit--> Repo local --push--> GitHub
+
+git status                     # ¿Qué ha cambiado? (úsalo MUCHO)
+git diff                       # Ver los cambios línea a línea (sal con q)
+git add <archivo>              # Preparar un archivo para el commit
+git add .                      # Preparar TODOS los cambios de esta carpeta
+git restore --staged <archivo> # Quitar un archivo de "preparados"
+git commit -m "<mensaje>"      # Crear la "foto" con un mensaje
+git push                       # Subir los commits a GitHub
+git push -u origin <rama>      # Primer push de una rama nueva
+git pull                       # Bajar los cambios de GitHub
+
+Mensajes (Conventional Commits):  tipo(ámbito): descripción
+   feat: algo nuevo     fix: arreglo     docs: documentación
+   chore: configuración test: tests      refactor: reorganizar código
+   Ejemplo:  git commit -m "feat(tasks): add Task entity"
+
+
+--------------------------------------------------------------
+ 7. GIT: RAMAS
+--------------------------------------------------------------
+
+git branch                     # Lista las ramas (* = en la que estás)
+git switch -c <rama>           # Crea una rama nueva y se cambia a ella
+git switch <rama>              # Cambia a una rama que ya existe
+git merge <rama>               # Trae los cambios de <rama> a la actual
+git branch -d <rama>           # Borra una rama ya fusionada
+
+
+--------------------------------------------------------------
+ 8. GIT: HISTORIAL Y DESHACER
+--------------------------------------------------------------
+
+git log --oneline              # Historial resumido (sal con q)
+git log --oneline --graph      # Historial con dibujo de ramas
+git restore <archivo>          # Descarta cambios NO preparados de un archivo
+                               # (¡se pierden!)
+git commit --amend -m "<msg>"  # Corrige el mensaje del ÚLTIMO commit
+                               # (solo si aún NO has hecho push)
+
+
+--------------------------------------------------------------
+ 9. ERRORES TÍPICOS
+--------------------------------------------------------------
+
+"bash: cd: X: No such file or directory"
+   -> Esa carpeta no está dentro de la actual. Haz pwd y ls para ver
+      dónde estás y qué hay. Usa TAB para no escribir mal el nombre.
+
+"fatal: not a git repository"
+   -> No estás dentro de la carpeta del proyecto (o no has hecho git init).
+
+"nothing to commit, working tree clean"
+   -> No hay cambios nuevos: todo está ya guardado en un commit.
+
+Te pide contraseña al hacer push
+   -> GitHub no acepta tu contraseña normal. Usa un Personal Access Token
+      o inicia sesión desde Android Studio (Settings > Version Control > GitHub).
+
+Pantalla rara con ~ y no puedo escribir (tras git commit sin -m)
+   -> Es el editor Vim. Para salir: pulsa Esc, escribe :q! y pulsa Enter.
+      Evítalo usando siempre git commit -m "mensaje".
