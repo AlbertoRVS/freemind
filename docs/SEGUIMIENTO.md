@@ -50,8 +50,8 @@
 | **1.1** | Paquetes | 📦 | | `583b022` |
 | **1.2** | `enum class` | 📦 | | `583b022` |
 | **1.3** | `data class` Task | ✅ | | |
-| **1.4** | Reglas de negocio con `when` | ⬜ | | |
-| **1.5** | Tests unitarios | ⬜ | | |
+| **1.4** | Reglas de negocio con `when` | ✅ | | |
+| **1.5** | Tests unitarios | ✅ | | |
 | **2.1** | Tema Ghibli | ⬜ | | |
 | **2.2** | `TaskCard` y previews | ⬜ | | |
 | **2.3** | Estado y state hoisting | ⬜ | | |
@@ -383,6 +383,112 @@ Lo que encontré en el proyecto vacío original:
 #### 📦 Commit autorizado
 - [x] ✅ Aprobada. En `fase-1`, según la guía actualizada: `feat(domain): add Task model` (solo `Task.kt`), después `test(domain): add Task default values tests` (`TaskTest.kt`, con su `assertEquals`) y `docs: update tracking for activity 1.3`.
 
+---
+
+### Actividad 1.4 · Funciones, `when` y validación
+
+**Estado:** ✅ Aprobada  ·  **Revisión nº:** 4  ·  **Fecha:** 06/10/2026
+**Archivos revisados:** `domain/TaskRules.kt`
+
+#### ✅ Criterios de aceptación
+- [x] `validationError()` detecta los 4 casos y devuelve `null` si es válida
+- [x] `isPending()` cumple las 4 reglas (Rev. 4)
+
+#### 🌟 Lo que está bien
+- `validationError()` como función de extensión con `when` sin argumento: estructura correcta y en el orden del enunciado.
+- Has usado **guardas en `when`** (`TaskType.PUNCTUAL if ...`), una novedad de Kotlin 2.2. Bien investigado.
+- Recibes `today` como parámetro en vez de usar `LocalDate.now()`: eso hará la función testeable en la 1.5.
+
+#### ❌ Errores (obligatorio corregir)
+> **Rev. 2:** ✅ corregidos el 3 (Puntual archivada) y gran parte del 4 y 5 (ya usa `lastCompletion` y no `dueDate`). **Siguen pendientes:**
+> - **1 y 2**: la `class TaskRules` y el import de Compose siguen ahí.
+> - **Nuevo, líneas 23-24**: `!isArchived || ...` hace que las Obligatorias salgan **siempre** pendientes: una Obligatoria nunca se archiva, así que `!isArchived` siempre es `true` y el `||` ya no mira lo de la derecha. Las Obligatorias no usan `isArchived`.
+> - **Nuevo, líneas 23-24**: si nunca se completó (`lastCompletion == null`), `null?.isBefore(...) == true` da `false`: sale "no pendiente" y debería ser pendiente. El caso null hay que comprobarlo explícitamente con `lastCompletion == null || ...`.
+
+1. **`TaskRules.kt:6`**: otra vez una clase envolvente (`class TaskRules { }`). Dentro de una clase, las funciones de extensión solo se pueden usar dentro de esa clase: `task.validationError()` no funcionaría en el resto de la app. Quítala, como en `Enums.kt`.
+2. **`TaskRules.kt:3`**: `import androidx.compose.ui.Modifier.Companion.then` sobra (se coló con un autocompletado). Además, `domain` debe ser Kotlin puro, **sin nada de Android ni Compose**: así se puede testear y reutilizar.
+3. **`TaskRules.kt:19 y 25`**: una Puntual **archivada** no entra en la línea 19 y cae en `else -> true`, así que sale pendiente. Pista: en vez de guarda, que la rama de `PUNCTUAL` **devuelva** la condición.
+4. **`TaskRules.kt:21`**: la diaria mira `isArchived` y `dueDate`, que no tienen nada que ver (esos campos son de las Puntuales). La regla depende de **`lastCompletion`**, que ahora no usas en ninguna línea. Traduce el enunciado tal cual: "nunca se completó" (¿cómo se escribe "es null"?) **o** "la última vez no fue `today`".
+5. **`TaskRules.kt:22-23`**: la semanal también usa `dueDate` en vez de `lastCompletion`. Además, si `dueDate` es `null`, `isBefore(null)` **lanza una excepción** en tiempo de ejecución. Regla: pendiente si nunca se completó **o** si la última vez es anterior al lunes de esta semana. Fíjate en el orden: es `lastCompletion.isBefore(lunes)`, no al revés.
+
+> **Rev. 3:** ✅ quitadas la clase y el import, y `isArchived` ya no está en diaria/semanal. **Queda uno:** si `lastCompletion` es `null` (nunca se completó), diaria y semanal devuelven `false`, y el enunciado dice que debe estar **pendiente**. `null?.isBefore(x) == true` es `false` cuando es null.
+
+> **Rev. 4:** ✅ resuelto con `lastCompletion == null || lastCompletion.isBefore(...)`, aprovechando el *smart cast* (tras el `== null ||`, Kotlin sabe que no es null).
+
+#### ⚠️ A mejorar (obligatorio corregir)
+> **Rev. 2:** ✅ los dos corregidos: `isBlank()` y `when (frequency)` anidado sin `else`.
+
+1. **`TaskRules.kt:10`**: `isEmpty()` deja pasar un título `"   "`. Usa `isBlank()`.
+2. **`TaskRules.kt:25`**: el `else -> true` esconde errores (el de la Puntual archivada viene de ahí). Si cubres todos los casos, no necesitas `else` y el compilador te avisa si te dejas uno. Pista: rama `MANDATORY ->` con un `when (frequency)` dentro que trate `DAILY`, `WEEKLY` y `null`.
+
+#### 💡 Sugerencias (opcional)
+- Mensajes: "el Título de la tarea esta vacío." → "El título no puede estar vacío." (mayúscula inicial, tilde en "está").
+- Importa `java.time.DayOfWeek` arriba y escribe solo `DayOfWeek.MONDAY`.
+- Escribe los tests de la 1.5 mientras corriges: son justo los casos de este fallo.
+
+#### 🔁 Historial de revisiones
+- Rev. 1 (06/10): validación casi correcta; `isPending` no usa `lastCompletion` y falla la Puntual archivada.
+- Rev. 4 (07/10): caso `null` resuelto. **Aprobada.**
+- Rev. 3 (06/10): solo queda el caso `lastCompletion == null` en diaria y semanal.
+- Rev. 2 (06/10): estructura `when` correcta. Faltan quitar la clase y el import, y arreglar la lógica de diaria/semanal (`isArchived` sobrante y caso `null`).
+
+#### 📦 Commit autorizado
+- [x] ✅ Aprobada: `feat(domain): add task validation and pending rules` (solo `TaskRules.kt`).
+
+---
+
+### Actividad 1.5 · Tus primeros tests unitarios
+
+**Estado:** ✅ Aprobada (con un retoque antes del commit)  ·  **Revisión nº:** 4  ·  **Fecha:** 06/10/2026
+**Archivos revisados:** `test/.../domain/TaskRulesTest.kt`, `TaskTest.kt`, `ExampleUnitTest.kt`
+
+#### ✅ Criterios de aceptación
+- [x] Al menos 6 tests (Rev. 4: 13 tests; ver nota del domingo): uno por error de validación (✅ los 4), uno de tarea válida (falta) y dos de la semanal: completada este lunes y completada el domingo pasado (faltan)
+- [x] Todos los tests pasan y comprueban lo que dice el enunciado
+- [x] Los nombres describen el comportamiento
+- [x] Borrar `ExampleUnitTest` (Rev. 2)
+
+#### 🌟 Lo que está bien
+- 11 tests, con los 4 errores de validación cubiertos y fechas fijas a partir de `today`: has entendido `minusDays`, `plusDays` y por qué no usar `now()`.
+- Comentarios KDoc explicando qué espera cada test.
+
+#### ❌ Errores (obligatorio corregir)
+1. **`TaskRulesTest.kt:84-94`**: el test espera `false` para una diaria que nunca se completó, y el comentario lo justifica con lo que hace tu código. **Un test se escribe a partir del enunciado, no del código**: si adaptas el test al fallo, el test deja de servir. El enunciado dice "pendiente si nunca se completó", así que debe ser `assertTrue`. Este test en rojo te llevará directo al fallo que queda en la 1.4.
+2. **`TaskRulesTest.kt:110-117`**: se llama "Weekly" pero crea la tarea con `Frequency.DAILY`.
+3. **Faltan los dos tests de la semanal** que pide el enunciado: completada **este lunes** (no pendiente: es el caso límite, el más importante) y completada **el domingo pasado** (pendiente). Pista: `today.with(DayOfWeek.MONDAY)` y ese lunes `.minusDays(1)`.
+4. **Falta el test de tarea válida**: con todos los datos correctos, `validationError()` devuelve `null` (`assertNull`).
+5. **`ExampleUnitTest.kt`** sigue ahí: el enunciado pide borrarlo.
+
+> **Rev. 2:** ✅ corregidos el 1 (ahora `assertTrue`), el 4 (`validationOk`) y el 5 (`ExampleUnitTest` borrado). **Siguen pendientes:**
+> - **2**: `mandatoryWeeklyLastWeekComletionIsPending` sigue usando `Frequency.DAILY` (línea 126), así que no prueba la semanal.
+> - **3**: siguen faltando los dos casos del enunciado. "Ayer" (martes 6) no es el caso límite: hace falta completada **el lunes 5** (no pendiente) y **el domingo 4** (pendiente). Si el código usara mal la comparación (por ejemplo, `isAfter` en vez de `isBefore`, o el lunes de otra semana), el test del martes seguiría en verde y el del lunes no.
+
+> **Rev. 3:** ✅ el último test ya usa `WEEKLY` y hay un test nuevo de "completada el domingo → pendiente" (bien pensado, con `today` = lunes). **Solo falta el caso "completada este lunes → no pendiente"** (con `today` = miércoles y `lastCompletion` = el lunes de esa semana).
+
+> **Rev. 4:** ✅ añadido "completada el lunes → no pendiente". ⚠️ Pero el test del **domingo** (Rev. 3) ha desaparecido: se sustituyó en vez de añadir uno nuevo. Hay que **restaurarlo antes del commit** (es el otro borde que pide el enunciado). No hace falta volver a enviarlo a revisión.
+
+#### ⚠️ A mejorar (obligatorio corregir)
+> **Rev. 4:** ✅ todos corregidos: sin `isArchived` sobrante, `assertTrue`/`assertFalse`/`assertNull` y sin erratas.
+> **Rev. 3:** ✅ nombres con comillas invertidas. Quedan: "comletion", `isArchived = true` en Opcional y diarias, y `assertEquals(true/false/null, ...)`.
+> **Rev. 2:** siguen pendientes los tres (nombres, `isArchived = true` sobrante, `assertEquals(true/false/null, ...)` → `assertTrue`/`assertFalse`/`assertNull`).
+
+1. **Nombres**: usa un solo estilo, el de comillas invertidas, que se lee como una frase (`` `weekly task completed this monday is not pending` ``). Corrige también "Comletion".
+2. **Datos que despistan**: en las Opcionales y Obligatorias pones `isArchived = true`, pero esas tareas nunca se archivan. Un test debe tener solo los datos que importan.
+3. `assertEquals(false, ...)` y `assertEquals(true, ...)` → `assertFalse(...)` y `assertTrue(...)`, más claros.
+
+#### 💡 Sugerencias (opcional)
+- En `TaskTest.kt`, el import `junit.framework.TestCase.assertEquals` es de una versión antigua de JUnit. Usa `org.junit.Assert.assertEquals` en todos los tests.
+- Puedes quitar el `println` de `TaskTest`: ya lo comprueba el `assertEquals`.
+
+#### 🔁 Historial de revisiones
+- Rev. 4 (07/10): test del lunes y retoques hechos. **Aprobada**, restaurando antes del commit el test del domingo.
+- Rev. 3 (07/10): test del domingo y frecuencia corregidos, nombres con comillas. Falta el test del lunes y los retoques.
+- Rev. 2 (07/10): corregidos el test adaptado al fallo, la tarea válida y `ExampleUnitTest`. Faltan los casos lunes/domingo, la frecuencia del último test y los ⚠️.
+- Rev. 1 (06/10): buena base de 11 tests. Falta tarea válida, los dos casos semanales del enunciado y borrar `ExampleUnitTest`. Un test está adaptado al fallo.
+
+#### 📦 Commit autorizado
+- [x] ✅ Aprobada: `test(domain): add TaskRules unit tests` (`TaskRulesTest.kt` + borrado de `ExampleUnitTest.kt`), después del commit de la 1.4.
+
 ## Fase 2 · Compose y tema Ghibli
 
 _(sin fichas todavía)_
@@ -428,6 +534,7 @@ _(sin fichas todavía)_
 | Error | Dónde apareció | Cómo evitarlo |
 |---|---|---|
 | No ceñirse a los nombres/valores del enunciado | 1.2 | Antes de pedir corrección, repasa los ✅ Criterios de aceptación uno por uno. |
+| Clase envolvente innecesaria (`class Enums`, `class TaskRules`) | 1.2, 1.4 | En Kotlin, enums, funciones y funciones de extensión van sueltos en el archivo. Solo crea una clase si necesitas crear objetos de ella. |
 
 ---
 
@@ -440,4 +547,5 @@ _(sin fichas todavía)_
 | 06/10 | ¿Cómo hago obligatorio un parámetro? | No dándole valor por defecto: `val title: String` ya es obligatorio. |
 | 06/10 | ¿Diferencia entre `Tipo?` y `Tipo? = null`? | `?` = **puede** valer null (tipo). `= null` = valor **por defecto** (se puede omitir al crear el objeto). Son cosas distintas y se combinan. |
 | 06/10 | ¿Cómo pruebo mi código? | Tests unitarios en `app/src/test`: función con `@Test` y `assertEquals(esperado, real)`, se ejecuta con la flecha verde. |
+| 07/10 | ¿Es buena práctica nombrar los tests con comillas invertidas? | Sí, en Kotlin es lo habitual en tests: se leen como una frase. Solo en `src/test`; en `androidTest` (móvil) usa camelCase, porque Android no admite espacios en nombres de función. |
 | 06/10 | ¿Comentarios de una línea: `/** */` o `//`? | `/** Texto */` (KDoc) para documentar clases, enums y funciones: se ve al pasar el ratón. `//` para notas dentro del código. Se cierra con `*/`, no con `**/`. |
