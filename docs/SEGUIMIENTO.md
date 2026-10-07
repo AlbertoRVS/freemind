@@ -49,9 +49,9 @@
 | **0.3** | Git y GitHub | 📦 | — | `bea0e7a` |
 | **1.1** | Paquetes | 📦 | | `583b022` |
 | **1.2** | `enum class` | 📦 | | `583b022` |
-| **1.3** | `data class` Task | ✅ | | |
-| **1.4** | Reglas de negocio con `when` | ✅ | | |
-| **1.5** | Tests unitarios | ✅ | | |
+| **1.3** | `data class` Task | 📦 | | `08a88aa` + test `e07d693` |
+| **1.4** | Reglas de negocio con `when` | 📦 | | `70b71ae` |
+| **1.5** | Tests unitarios | 📦 | | `b78774c` |
 | **2.1** | Tema Ghibli | ⬜ | | |
 | **2.2** | `TaskCard` y previews | ⬜ | | |
 | **2.3** | Estado y state hoisting | ⬜ | | |
@@ -88,6 +88,9 @@
 | **10.4** | README y release | ⬜ | | |
 
 **Repositorio GitHub:** https://github.com/AlbertoRVS/freemind
+
+**Pull Requests de fase:**
+- Fase 1 → `main`: https://github.com/AlbertoRVS/freemind/pull/1 (merge commit, 07/10/2026)
 
 ---
 
