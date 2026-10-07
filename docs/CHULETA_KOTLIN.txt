@@ -1,0 +1,98 @@
+==============================================================
+  CHULETA DE KOTLIN  ·  Proyecto FreeMind
+==============================================================
+
+Los ejemplos usan una "biblioteca" (Book, BookGenre...) para que
+sirvan en cualquier proyecto. Lo que va tras // es un comentario.
+
+
+--------------------------------------------------------------
+ 1. IF ANIDADO (un if dentro de otro)
+--------------------------------------------------------------
+
+En Kotlin, if también DEVUELVE un valor (como when).
+
+// Forma clásica, con return en cada rama
+fun Book.isLate(today: LocalDate): Boolean {
+    if (genre == BookGenre.REFERENCE) {
+        return false
+    } else {
+        if (returnDate == null) {
+            return false
+        } else if (returnDate.isBefore(today)) {
+            return true
+        } else {
+            return false
+        }
+    }
+}
+
+// Lo mismo usando if como expresión (sin return en cada rama)
+fun Book.isLate(today: LocalDate): Boolean =
+    if (genre == BookGenre.REFERENCE) false
+    else if (returnDate == null) false
+    else returnDate.isBefore(today)
+
+TRUCO: después de comprobar "x == null ||", en la parte derecha
+del || Kotlin ya sabe que x NO es null: puedes usar x.isBefore(...)
+sin ?.
+
+
+--------------------------------------------------------------
+ 2. WHEN DENTRO DE OTRO WHEN
+--------------------------------------------------------------
+
+Útil cuando decides según un enum y, dentro de un caso, según otro.
+
+fun Book.loanDays(member: MemberType?): Int = when (genre) {
+    BookGenre.NOVEL -> when (member) {    // when dentro de una rama
+        MemberType.STUDENT -> 30
+        MemberType.ADULT -> 21
+        null -> 14                         // el caso null también se trata
+    }
+    BookGenre.COMIC -> 7
+    BookGenre.REFERENCE -> 0
+}   // sin else: el compilador avisa si falta algún caso del enum
+
+CONSEJO: con enums, evita el "else": si mañana añades un valor
+nuevo al enum, el compilador te dirá dónde falta tratarlo.
+
+
+--------------------------------------------------------------
+ 3. FECHAS (LocalDate)            import java.time.LocalDate
+--------------------------------------------------------------
+
+LocalDate es SOLO un día (año-mes-día), sin hora.
+No se puede modificar: cada operación devuelve una fecha NUEVA.
+
+Crear
+    LocalDate.of(2026, 10, 7)        // 7 de octubre de 2026
+    LocalDate.now()                  // hoy (¡nunca en tests!)
+
+Moverse
+    fecha.plusDays(1)                // día siguiente
+    fecha.minusDays(3)               // 3 días antes
+    fecha.minusWeeks(1)              // una semana antes
+    fecha.plusMonths(1)              // un mes después
+
+Comparar
+    a.isBefore(b)                    // ¿a es anterior a b?
+    a.isAfter(b)                     // ¿a es posterior a b?
+    a == b                           // ¿mismo día?
+
+Días de la semana                import java.time.DayOfWeek
+    fecha.with(DayOfWeek.MONDAY)     // el lunes de ESA misma semana
+    fecha.dayOfWeek                  // qué día es (DayOfWeek.WEDNESDAY...)
+
+REGLA DE ORO EN TESTS: nunca LocalDate.now().
+   now() cambia cada día: un test que hoy pasa podría fallar el
+   domingo. Por eso las funciones reciben "today" como parámetro:
+   en el test eliges tú qué día es "hoy".
+
+Calendario de ejemplo (octubre de 2026):
+
+    dom 4   lun 5   mar 6   mié 7   ...   dom 11
+      ↑       ↑               ↑
+    semana  lunes de        "hoy"
+    pasada  esta semana     (today)
+
