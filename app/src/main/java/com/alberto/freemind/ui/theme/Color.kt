@@ -2,10 +2,14 @@ package com.alberto.freemind.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-val Purple80 = Color(0xFFD0BCFF)
-val PurpleGrey80 = Color(0xFFCCC2DC)
-val Pink80 = Color(0xFFEFB8C8)
 
-val Purple40 = Color(0xFF6650a4)
-val PurpleGrey40 = Color(0xFF625b71)
-val Pink40 = Color(0xFF7D5260)
+/** COLORES DEL PROYECTO FREEMIND */
+
+val ForestGreen = Color(0xFF4A7C59)
+val BlueSky = Color(0xFF7FB7BE)
+val LastLight = Color(0xFFE8A87C)
+val WaterPaper = Color(0xFFFBF6E9)
+val DarkForest = Color(0xFF1E2A23)
+val NightForest = Color(0xFF2A3A30)
+val MossLight = Color(0xFF9CCBA6)
+val Cream = Color(0xFFFFFDF7)
