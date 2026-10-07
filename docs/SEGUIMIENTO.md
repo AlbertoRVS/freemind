@@ -52,8 +52,8 @@
 | **1.3** | `data class` Task | 📦 | | `08a88aa` + test `e07d693` |
 | **1.4** | Reglas de negocio con `when` | 📦 | | `70b71ae` |
 | **1.5** | Tests unitarios | 📦 | | `b78774c` |
-| **2.1** | Tema Ghibli | ✅ | | |
-| **2.2** | `TaskCard` y previews | ⬜ | | |
+| **2.1** | Tema Ghibli | 📦 | | `77c370f` |
+| **2.2** | `TaskCard` y previews | ✅ | | |
 | **2.3** | Estado y state hoisting | ⬜ | | |
 | **2.4** | `LazyColumn` | ⬜ | | |
 | **3.1** | Dependencias | ⬜ | | |
@@ -534,6 +534,51 @@ Lo que encontré en el proyecto vacío original:
 
 #### 📦 Commit autorizado
 - [x] ✅ Aprobada: `feat(ui): add Ghibli color scheme and typography` (incluye `res/font/` y `MainActivity.kt`).
+
+### Actividad 2.2 · Composables, `Modifier` y `@Preview`
+
+**Estado:** ✅ Aprobada  ·  **Revisión nº:** 3  ·  **Fecha:** 07/10/2026
+**Archivos revisados:** `ui/components/TaskCard.kt`, `res/values/strings.xml`, `app/build.gradle.kts`, `gradle/libs.versions.toml`
+
+#### ✅ Criterios de aceptación
+- [x] Las 3 previews se ven bien (una por tipo de tarea)
+- [x] `TaskCard` recibe un `modifier` como parámetro
+- [x] Los textos fijos vienen de `strings.xml` con `stringResource(R.string.xxx)`
+- [x] Muestra título, descripción solo si no está vacía, caramelos con 🍬 y fecha si la tiene
+
+#### 🌟 Lo que está bien
+- Estructura `Card` → `Row` → `Column(weight(1f))` bien entendida, con el `modifier` recibido aplicado a la `Card` y no a los hijos.
+- Descripción condicional con `isNotBlank()` y fecha solo si no es `null`.
+- Ya usas los estilos del tema (`MaterialTheme.typography...`) y envuelves las previews en `FreeMindTheme` + `Surface`.
+- Datos de las previews fijos (`LocalDate.of`), sin `now()`.
+
+#### ❌ Errores (obligatorio corregir)
+1. **`TaskCard.kt:60`**: `mandatoryTask` se crea con `TaskType.OPTIONAL`, así que no hay preview de Obligatoria.
+2. **`TaskCard.kt:34`**: los caramelos se muestran como un número suelto, sin 🍬 y sin `strings.xml`. Pista: `<string name="..">%1$d 🍬</string>` y `stringResource(R.string.xxx, task.candies)`. Su sitio natural es el `Text("")` vacío de la línea 43, a la derecha de la tarjeta.
+3. **`build.gradle.kts` y `libs.versions.toml`**: se ha añadido `androidx.ui` con versión fija `1.12.1`. Compose UI ya viene con el BOM (`libs.androidx.compose.ui`), y una versión fija se salta el BOM y puede mezclar versiones. Deshacer con `git restore app/build.gradle.kts gradle/libs.versions.toml`.
+
+#### ⚠️ A mejorar (obligatorio corregir)
+1. **`TaskCard.kt:17`**: import de `Greeting` sin usar.
+2. La fecha sale como `2026-10-11` y sin texto fijo. Usa una cadena con parámetro (`%1$s`) para que se lea como una fecha de entrega.
+3. Las previews deben ser `private`: solo sirven dentro de este archivo.
+4. Formato: `today.plusDays(4),)` y cierres de paréntesis en la misma línea. Ctrl+Alt+L.
+
+#### 💡 Sugerencias (opcional)
+- Caramelos con `color = MaterialTheme.colorScheme.tertiary`: para eso definiste el color atardecer.
+- Pon una preview en modo claro, y no las tres en noche.
+- El repo es público: los textos de ejemplo de las previews los puede leer cualquiera.
+- Tildes en los textos de ejemplo ("médico", "Urólogo").
+
+#### ❓ Preguntas para ti
+- ¿Por qué crees que el `modifier` del parámetro se usa en la `Card` y en el `Row` se escribe `Modifier` con mayúscula?
+
+#### 🔁 Historial de revisiones
+- Rev. 3 (07/10): ✅ todo corregido: `task.candies` como `Int`, caramelos a la derecha y fecha con `R.string.date`. El "todo en rojo" era el `git restore` de `build.gradle.kts` sin volver a sincronizar Gradle. Claude quitó las dos líneas de `androidx-ui` que quedaban en `libs.versions.toml` y dio formato al bloque de la fecha. **Aprobada.**
+- Rev. 2 (07/10): ✅ tipo Obligatoria, import, `private` y formato. ❌ `stringResource(R.string.candy, task.candies.toString())`: `%1$d` espera un `Int` y recibe un `String`, lo que provoca el *render error* de las previews (en el móvil sería un cierre de la app). Siguen pendientes: los caramelos a la derecha, el texto de la fecha y deshacer la dependencia `androidx.ui`.
+- Rev. 1 (07/10): buena estructura. Falta el tipo Obligatoria, los caramelos con 🍬 desde `strings.xml` y quitar la dependencia `androidx.ui` añadida.
+
+#### 📦 Commit autorizado
+- [x] ✅ Aprobada: `feat(ui): add TaskCard component`
 
 ## Fase 3 · Navegación
 
