@@ -52,7 +52,7 @@
 | **1.3** | `data class` Task | 📦 | | `08a88aa` + test `e07d693` |
 | **1.4** | Reglas de negocio con `when` | 📦 | | `70b71ae` |
 | **1.5** | Tests unitarios | 📦 | | `b78774c` |
-| **2.1** | Tema Ghibli | ⬜ | | |
+| **2.1** | Tema Ghibli | ✅ | | |
 | **2.2** | `TaskCard` y previews | ⬜ | | |
 | **2.3** | Estado y state hoisting | ⬜ | | |
 | **2.4** | `LazyColumn` | ⬜ | | |
@@ -494,7 +494,46 @@ Lo que encontré en el proyecto vacío original:
 
 ## Fase 2 · Compose y tema Ghibli
 
-_(sin fichas todavía)_
+### Actividad 2.1 · El tema: colores y tipografía Ghibli
+
+**Estado:** ✅ Aprobada  ·  **Revisión nº:** 3  ·  **Fecha:** 07/10/2026
+**Archivos revisados:** `ui/theme/Color.kt`, `ui/theme/Theme.kt`, `ui/theme/Type.kt`, `MainActivity.kt`, `res/font/`
+
+#### ✅ Criterios de aceptación
+- [x] Paleta propia en `Color.kt` (claro y oscuro)
+- [x] `Theme.kt` con esquema claro y oscuro y `dynamicColor = false`
+- [x] Fuente propia (Zen Maru Gothic, 5 pesos) aplicada en `Type.kt`
+- [x] La app arranca con tu fondo y tu fuente, en claro y en oscuro (previews de día y de noche)
+
+#### 🌟 Lo que está bien
+- Roles bien asignados: `primary` verde bosque, `secondary` cielo, `tertiary` atardecer (para los caramelos), `background` papel y `surface` crema.
+- Modo oscuro bien invertido: fondo bosque de noche, `surface` algo más clara y un `primary` más claro (MossLight) para que contraste.
+- Todos los colores `on…` definidos y con buen contraste (texto oscuro sobre colores claros y al revés).
+- Color.kt limpio: sin los Purple/Pink de la plantilla y con nombres en PascalCase.
+- Dos `@Preview` (normal y `UI_MODE_NIGHT_YES`) envueltas en `Surface` para ver el tema real.
+
+#### ❌ Errores (obligatorio corregir)
+> **Rev. 2:** ✅ todos corregidos.
+1. **`res/font/`**: los `.ttf` tenían mayúsculas y guiones (`ZenMaruGothic-Regular.ttf`). En `res/` solo se admiten minúsculas, números y `_`, así que no compilaba. Renombrados a `zen_maru_gothic_*.ttf`.
+2. **`Theme.kt`**: la paleta de día estaba en `DarkColorScheme` (con `background = BlueSky` y `secondary = WaterPaper`) y el claro seguía con los Purple.
+3. **`Theme.kt`**: `dynamicColor = true`. En Android 12+ el sistema ignora tu paleta.
+
+#### ⚠️ A mejorar (obligatorio corregir)
+> **Rev. 3:** ✅ corregidos.
+1. Faltaban `onSecondary`, `onTertiary` y `onSurface` en el claro, y el oscuro era una copia del claro.
+2. Las previews salían en blanco y negro: `Greeting` es solo un `Text` sin fondo. Se arregla envolviéndolo en `Surface`.
+3. `import android.app.Activity` sin usar, y bloque de comentario de la plantilla.
+
+#### 💡 Sugerencias (opcional)
+- `@Preview()` → `@Preview`: los paréntesis vacíos sobran.
+
+#### 🔁 Historial de revisiones
+- Rev. 3 (07/10): previews con `Surface`, ya se ven los dos temas. **Aprobada.**
+- Rev. 2 (07/10): Color.kt y Theme.kt completos (claro y oscuro, `dynamicColor = false`). Previews sin fondo.
+- Rev. 1 (07/10): guía de roles de color. Fuentes con nombres no válidos, paleta en el esquema equivocado y `dynamicColor = true`. **Type.kt:** Alberto escribió la `FontFamily` y el patrón `base.x.copy(fontFamily = ...)`; los 15 estilos los completó Claude a petición suya.
+
+#### 📦 Commit autorizado
+- [x] ✅ Aprobada: `feat(ui): add Ghibli color scheme and typography` (incluye `res/font/` y `MainActivity.kt`).
 
 ## Fase 3 · Navegación
 

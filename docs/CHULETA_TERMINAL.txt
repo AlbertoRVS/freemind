@@ -115,6 +115,16 @@ git switch -c <rama>           # Crea una rama nueva y se cambia a ella
 git switch <rama>              # Cambia a una rama que ya existe
 git merge <rama>               # Trae los cambios de <rama> a la actual
 git branch -d <rama>           # Borra una rama ya fusionada
+git fetch --prune              # Olvida las ramas que ya borraste en GitHub
+
+Guardar cambios a un lado (stash):
+git stash                      # Guarda tus cambios sin commit y deja
+                               # la carpeta limpia
+git stash pop                  # Te devuelve los cambios guardados
+git stash list                 # Ver qué tienes guardado
+
+   Úsalo cuando git switch te diga "Your local changes ... would be
+   overwritten": git stash -> git switch <rama> -> git stash pop
 
 
 --------------------------------------------------------------
@@ -139,6 +149,12 @@ git commit --amend -m "<msg>"  # Corrige el mensaje del ÚLTIMO commit
 
 "fatal: not a git repository"
    -> No estás dentro de la carpeta del proyecto (o no has hecho git init).
+
+"Your local changes to the following files would be overwritten
+ by checkout" (al hacer git switch)
+   -> Tienes cambios sin commit que chocan con la otra rama. Haz commit,
+      o guárdalos con git stash, cambia de rama y recupéralos con
+      git stash pop.
 
 "nothing to commit, working tree clean"
    -> No hay cambios nuevos: todo está ya guardado en un commit.
