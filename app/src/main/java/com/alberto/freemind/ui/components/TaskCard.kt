@@ -43,10 +43,13 @@ fun TaskCard(task: Task, modifier: Modifier = Modifier) {
                     )
                 }
             }
-            Text(
-                stringResource(R.string.candy, task.candies),
-                style = MaterialTheme.typography.titleMedium
-            )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(task.candies.toString(), style = MaterialTheme.typography.titleMedium)
+                Konpeito(
+                    contentDescription = stringResource(R.string.candies),
+                    modifier = Modifier.padding(start = 4.dp)
+                )
+            }
         }
     }
 }
