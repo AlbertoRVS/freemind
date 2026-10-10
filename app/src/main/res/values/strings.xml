@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">FreeMind</string>
+    <string name="candies">caramelos</string>
+    <string name="date">Para el %1$s</string>
 </resources>

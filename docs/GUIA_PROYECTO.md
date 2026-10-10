@@ -659,31 +659,167 @@ Commit: `test(ui): add TaskCard UI tests`
 
 🎯 **Objetivo:** entender cómo Compose redibuja cuando cambia un dato.
 
-📖 **Teoría breve:** Compose vuelve a ejecutar (**recomposición**) los composables cuyo **estado** cambia. `remember { mutableStateOf(x) }` crea un estado que sobrevive a las recomposiciones.
+📖 **Teoría ampliada**
 
-**State hoisting** ("elevar el estado"): un componente bonito y reutilizable **no guarda estado**, lo recibe y avisa con lambdas. Quien lo usa decide.
+**1. La recomposición: tu composable se ejecuta muchas veces**
 
-🧩 **Ejemplo análogo:**
+Un composable no se dibuja una vez y ya está. Cada vez que cambia un dato que usa, Compose **vuelve a llamar a la función entera** para redibujarla. Eso se llama **recomposición**.
+
+Por eso este contador **no funciona**:
 
 ```kotlin
-// Componente "tonto": recibe el estado y avisa del evento
 @Composable
-fun FavoriteButton(isFavorite: Boolean, onToggle: () -> Unit) {
-    IconToggleButton(checked = isFavorite, onCheckedChange = { onToggle() }) {
-        Icon(
-            imageVector = if (isFavorite) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
-            contentDescription = null
-        )
+fun PageCounter() {
+    var pages = 0                                   // ❌
+    Button(onClick = { pages++ }) {
+        Text("Páginas leídas: $pages")
+    }
+}
+```
+
+Tiene dos problemas:
+1. Compose **no se entera** de que `pages` ha cambiado (es una variable normal), así que no redibuja.
+2. Aunque redibujara, al volver a ejecutar la función, `var pages = 0` la pondría **otra vez a 0**.
+
+Cada problema tiene su solución:
+
+| Pieza | Qué resuelve |
+|---|---|
+| `mutableStateOf(x)` | Crea una "caja" **observable**. Cuando cambias lo que tiene dentro, Compose se entera y redibuja. Soluciona el problema 1. |
+| `remember { ... }` | **Guarda** el resultado entre recomposiciones. La primera vez ejecuta el bloque; las siguientes devuelve lo guardado. Soluciona el problema 2. |
+
+Por eso casi siempre van **juntos**:
+
+```kotlin
+@Composable
+fun PageCounter() {
+    var pages by remember { mutableStateOf(0) }    // ✅
+    Button(onClick = { pages++ }) {
+        Text("Páginas leídas: $pages")
+    }
+}
+```
+
+> `remember` también sirve **solo**, sin estado: en `Konpeito.kt` guarda el color elegido al azar para que no cambie cada vez que se redibuja la tarjeta. Ahí no hace falta `mutableStateOf` porque el color nunca cambia.
+
+**2. `=` o `by`: dos formas de escribir lo mismo**
+
+```kotlin
+// Con "=" tienes la caja y usas .value para leer y escribir
+val pages = remember { mutableStateOf(0) }
+pages.value++
+Text("${pages.value}")
+
+// Con "by" (delegado) Kotlin abre la caja por ti y usas la variable directamente
+var pages by remember { mutableStateOf(0) }
+pages++
+Text("$pages")
+```
+
+Usaremos `by`, que se lee mejor. Fíjate en que con `by` es **`var`**, porque la vas a modificar.
+
+⚠️ **Error típico:** con `by` aparece en rojo *"Property delegate must have a 'getValue' method"*. Faltan estos dos imports (Alt+Enter no siempre los ofrece):
+
+```kotlin
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+```
+
+**3. Lambdas como parámetros: cómo un componente "avisa"**
+
+Un parámetro puede ser **una función**. Su tipo se escribe `(parámetros) -> resultado`:
+
+| Tipo | Significa |
+|---|---|
+| `() -> Unit` | función sin parámetros que no devuelve nada |
+| `(Boolean) -> Unit` | función que recibe un `Boolean` |
+
+```kotlin
+@Composable
+fun ReadButton(onClick: () -> Unit) {        // recibe una función
+    Button(onClick = { onClick() }) {        // la LLAMA con () cuando se pulsa
+        Text("Marcar como leído")
     }
 }
 
-// Quien lo usa guarda el estado
+// Quien lo usa le PASA el código a ejecutar entre llaves
+ReadButton(onClick = { println("¡Pulsado!") })
+```
+
+Truco: si solo pasas la función sin hacer nada más, `onClick = { onClick() }` se puede abreviar a `onClick = onClick`.
+
+**4. `Checkbox`: la sintaxis**
+
+```kotlin
+Checkbox(
+    checked = isRead,                      // Boolean: ¿se dibuja marcado?
+    onCheckedChange = { onReadClick() }    // qué pasa al pulsarlo
+)
+```
+
+- `checked` **no cambia solo**. El Checkbox dibuja lo que le digas. Si al pulsar nadie cambia el estado, se queda igual. Esto es lo que más sorprende al principio.
+- `onCheckedChange` recibe el **nuevo valor** como parámetro (`it`, un `Boolean`). Puedes usarlo (`{ nuevo -> isRead = nuevo }`) o ignorarlo y simplemente invertir (`{ isRead = !isRead }`).
+- Toma solo el color `primary` de tu tema, sin hacer nada.
+
+**5. State hoisting ("elevar el estado")**
+
+Regla: **el estado baja como parámetro y los eventos suben como lambdas.**
+
+```
+      BookScreen          ← aquí vive el estado: var isRead by remember {...}
+       │       ▲
+isRead │       │ onReadClick()      (el estado baja, el evento sube)
+       ▼       │
+      BookCard            ← no guarda nada: dibuja y avisa
+```
+
+¿Por qué no poner el `remember` dentro de la tarjeta? Porque entonces **la tarjeta decidiría sola** y nadie de fuera sabría si está marcada. Más adelante, quien decida será el ViewModel y la base de datos (Fase 5). Así, la tarjeta sirve igual en una preview, en un test o en la app real.
+
+**6. Ejemplo completo análogo**
+
+```kotlin
 @Composable
-fun BookScreen() {
-    var fav by remember { mutableStateOf(false) }   // "by" = delegado, usas fav directamente
-    FavoriteButton(isFavorite = fav, onToggle = { fav = !fav })
+fun BookCard(
+    book: Book,
+    isRead: Boolean,                 // estado que RECIBE
+    onReadClick: () -> Unit,         // evento que AVISA
+    modifier: Modifier = Modifier
+) {
+    Card(modifier = modifier.fillMaxWidth()) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Checkbox(checked = isRead, onCheckedChange = { onReadClick() })
+            Text(book.title)
+        }
+    }
+}
+
+@Preview
+@Composable
+private fun BookCardPreview() {
+    MyAppTheme {
+        var isRead by remember { mutableStateOf(false) }    // la preview hace de "pantalla"
+        BookCard(
+            book = sampleBook,
+            isRead = isRead,
+            onReadClick = { isRead = !isRead }
+        )
+    }
 }
 ```
+
+**7. Modo interactivo de la preview**
+
+Una preview normal es una **foto**: no puedes pulsar nada. En el panel **Design**, encima de cada preview, hay un icono de **Start Interactive Mode** (una mano o un cursor). Al activarlo, la preview se ejecuta de verdad y puedes pulsar el Checkbox. Para salir, pulsa **Stop Interactive Mode**.
+
+**8. Errores típicos**
+
+| Síntoma | Causa |
+|---|---|
+| *"Property delegate must have a 'getValue'..."* | Faltan los imports `getValue` / `setValue` |
+| Pulso el Checkbox y no cambia | Nadie cambia el estado en `onCheckedChange`, o falta `mutableStateOf` |
+| Cambia y vuelve a su valor al momento | Falta `remember`: se recrea en cada recomposición |
+| *"Val cannot be reassigned"* | Usaste `val` con `by`; tiene que ser `var` |
+| *"@Composable invocations can only happen..."* | `remember` fuera de una función `@Composable` |
 
 ✍️ **Enunciado:** añade a `TaskCard` un `Checkbox` o botón de completar. `TaskCard` recibirá `isDone: Boolean` y `onDoneClick: () -> Unit`. En la preview, controla el estado con `remember` y comprueba en **modo interactivo** de la preview que se marca y desmarca.
 
@@ -698,26 +834,211 @@ Commit: `test(ui): check TaskCard done click`
 
 🎯 **Objetivo:** mostrar listas largas de forma eficiente.
 
-📖 **Teoría breve:** `LazyColumn` solo dibuja lo que se ve en pantalla (es el equivalente moderno de `RecyclerView`). Usa siempre `key` para que Compose sepa qué elemento es cuál.
+📖 **Teoría ampliada**
 
-🧩 **Ejemplo análogo:**
+En esta actividad juntas cuatro piezas nuevas. Así encajan en pantalla:
+
+```
+┌─────────────────────────────┐
+│ FreeMind                    │  ← TopAppBar (barra de arriba)
+├─────────────────────────────┤
+│ ┌─────────────────────────┐ │  ┐
+│ │ ☐ Ir al médico     2 ✦  │ │  │
+│ │   Para el 2026-10-12    │ │  │
+│ └─────────────────────────┘ │  │
+│ ┌─────────────────────────┐ │  │ TaskListScreen
+│ │ ☑ Limpiar arenero  1 ✦  │ │  │ (una LazyColumn de TaskCard)
+│ └─────────────────────────┘ │  │
+│ ┌─────────────────────────┐ │  │
+│ │ ☐ Leer 20 páginas  5 ✦  │ │  │
+│ └─────────────────────────┘ │  │
+│            ...              │  ┘  ← se puede hacer scroll
+└─────────────────────────────┘
+        Todo esto va dentro de un Scaffold
+```
+
+**1. `Column` frente a `LazyColumn`**
+
+| | `Column` | `LazyColumn` |
+|---|---|---|
+| Qué dibuja | **Todos** sus hijos, aunque no se vean | **Solo los que caben** en pantalla (y alguno más) |
+| Scroll | No, salvo que le añadas `Modifier.verticalScroll(...)` | Sí, siempre |
+| Para qué | Pocos elementos fijos (los textos de una tarjeta) | Listas, sobre todo si pueden crecer |
+
+Con 8 tareas no notarías diferencia, pero con 500 una `Column` dibujaría las 500 y la app iría a tirones. `LazyColumn` va creando y reciclando tarjetas según haces scroll (*lazy* = perezosa: solo trabaja cuando hace falta).
+
+**2. La sintaxis de `LazyColumn`**
+
+Dentro de las llaves de una `Column` escribes composables directamente. En una `LazyColumn`, **no**: dentro de sus llaves describes los elementos con `item { }` (uno suelto) o `items(lista) { }` (uno por cada elemento de la lista).
+
+```kotlin
+LazyColumn(
+    modifier = modifier,
+    contentPadding = PaddingValues(16.dp),             // margen alrededor de TODA la lista
+    verticalArrangement = Arrangement.spacedBy(8.dp)   // hueco ENTRE elementos
+) {
+    item {                                             // un elemento suelto (por ejemplo, un título)
+        Text("Mi biblioteca", style = MaterialTheme.typography.headlineSmall)
+    }
+    items(books, key = { it.id }) { book ->            // uno por cada libro
+        BookCard(book)
+    }
+}
+```
+
+- `items(books) { book -> ... }`: el bloque se ejecuta para cada libro, y `book` es el libro de esa vuelta (como en un `for`).
+- `contentPadding` se aplica dentro de la lista, así que el scroll llega hasta el borde. Si usaras `Modifier.padding`, la lista se "cortaría" antes del borde.
+- Ojo con el import: `items` es `androidx.compose.foundation.lazy.items`. Si Android Studio te ofrece otro, no es ese.
+
+**3. `key`: el DNI de cada elemento**
+
+`key = { it.id }` le dice a Compose cómo distinguir un elemento de otro. Sin `key`, si borras la tarea 2, Compose cree que la 3 "es" la 2 y le pasa su estado (por ejemplo, el check marcado). Con `key`, cada estado sigue a su tarea.
+
+⚠️ **Las claves no se pueden repetir.** Tu `Task` tiene `id: Long = 0` por defecto, así que si en los datos falsos no pones `id`, todas tendrán `0` y la app se cerrará con *"Key 0 was already used"*. En `FakeData` pon `id = 1`, `id = 2`, etc.
+
+**4. `FakeData.kt`: datos de ejemplo**
+
+Hasta la Fase 4 no habrá base de datos, así que usamos una lista fija en un archivo. Es una `val` de nivel superior (fuera de cualquier clase), como hiciste en `TaskRules.kt`:
+
+```kotlin
+// ui/FakeData.kt
+val fakeBooks = listOf(
+    Book(id = 1, title = "El viaje de Chihiro", genre = BookGenre.NOVEL, pages = 320),
+    Book(id = 2, title = "Cocina japonesa fácil", genre = BookGenre.COOKING, pages = 180),
+    Book(id = 3, title = "Kotlin para principiantes", genre = BookGenre.TECH, pages = 450),
+)
+```
+
+Y así empezarían las tuyas (las demás, hasta ~8, las inventas tú):
+
+```kotlin
+val fakeTasks = listOf(
+    Task(id = 1, title = "Ir al médico", type = TaskType.PUNCTUAL, dueDate = LocalDate.now().plusDays(2)),
+    Task(id = 2, title = "Limpiar arenero", type = TaskType.MANDATORY, frequency = Frequency.DAILY),
+    // ...
+)
+```
+
+> Aquí sí puedes usar `LocalDate.now()`: es para la app, no para un test.
+
+**5. Una "pantalla" (`TaskListScreen`)**
+
+Una pantalla no es nada especial: es un composable normal que **ocupa toda la pantalla y junta componentes**. Por convención se llama `XxxScreen` y va en `ui/screens/`. La diferencia con `TaskCard` es de responsabilidad:
+
+| | `TaskCard` (componente) | `TaskListScreen` (pantalla) |
+|---|---|---|
+| Qué dibuja | Una tarea | La lista entera |
+| Estado | Ninguno: lo recibe | Aquí **sí** puede vivir el estado (por ahora) |
+
+En la 2.3, tu `TaskCard` pide `isDone` y `onDoneClick`. En la lista, alguien tiene que guardar **qué tareas están hechas**, y ese alguien es la pantalla. Una forma sencilla es guardar un `Set` con los `id` marcados:
 
 ```kotlin
 @Composable
-fun BookList(books: List<Book>, modifier: Modifier = Modifier) {
-    LazyColumn(
-        modifier = modifier,
-        contentPadding = PaddingValues(16.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
+fun BookListScreen(books: List<Book>, modifier: Modifier = Modifier) {
+    var readIds by remember { mutableStateOf(setOf<Long>()) }   // ids de los libros leídos
+
+    LazyColumn(modifier = modifier, /* ... */) {
         items(books, key = { it.id }) { book ->
-            BookCard(book)
+            BookCard(
+                book = book,
+                isRead = book.id in readIds,                     // ¿está en el set?
+                onReadClick = {
+                    readIds = if (book.id in readIds) readIds - book.id   // quitar
+                              else readIds + book.id                       // añadir
+                }
+            )
         }
     }
 }
 ```
 
-✍️ **Enunciado:** crea en `ui` un archivo `FakeData.kt` con una lista de ~8 tareas de ejemplo (de los 3 tipos) y una pantalla `TaskListScreen` que las muestre. Ponla en `MainActivity` dentro de un `Scaffold` con una `TopAppBar` que diga el nombre de tu app.
+- `setOf<Long>()` crea un conjunto vacío de `Long`. Un `Set` no admite repetidos, que es justo lo que queremos.
+- `x in set` devuelve `true` si `x` está dentro.
+- `set + x` y `set - x` **crean un set nuevo**: no modifican el viejo. Por eso reasignamos `readIds = ...` y Compose se entera del cambio.
+
+> Esto es provisional: en la Fase 5 el estado pasará al ViewModel y en la Fase 7, a la base de datos.
+
+**6. `Scaffold`: el esqueleto de la pantalla**
+
+`Scaffold` (andamio) coloca las piezas típicas de una pantalla en su sitio. Tiene **huecos** (*slots*) que rellenas con lambdas:
+
+```kotlin
+Scaffold(
+    topBar = { /* barra de arriba */ },
+    bottomBar = { /* barra de abajo (la usaremos en la Fase 3) */ },
+    floatingActionButton = { /* botón redondo flotante (Fase 6) */ }
+) { innerPadding ->
+    // el contenido principal
+}
+```
+
+`innerPadding` es **el espacio que ocupan las barras**. Si no se lo aplicas al contenido, la lista se mete por debajo de la `TopAppBar` y la primera tarjeta queda tapada:
+
+```kotlin
+{ innerPadding ->
+    BookListScreen(books = fakeBooks, modifier = Modifier.padding(innerPadding))
+}
+```
+
+> Tu `MainActivity` ya tiene un `Scaffold` (lo trajo la plantilla) con el `Greeting` dentro. Ahora le añades `topBar` y cambias `Greeting` por tu pantalla.
+
+**7. `TopAppBar`: la barra de arriba**
+
+```kotlin
+TopAppBar(
+    title = { Text(stringResource(R.string.app_name)) },      // el título es una lambda
+    colors = TopAppBarDefaults.topAppBarColors(
+        containerColor = MaterialTheme.colorScheme.primary,   // fondo de la barra
+        titleContentColor = MaterialTheme.colorScheme.onPrimary
+    )
+)
+```
+
+- `title` no es un `String` sino una lambda con composables dentro. Así puedes poner un `Text`, un icono y un texto, etc.
+- `colors` es opcional. Sin él, la barra toma el color `surface`. Con `primary`, tu verde bosque queda arriba.
+- El nombre de la app ya está en `strings.xml` (`app_name`), no hace falta repetirlo.
+
+⚠️ Si `TopAppBar` sale subrayada con *"This material API is experimental"*, añade esto encima de la función que la usa:
+
+```kotlin
+@OptIn(ExperimentalMaterial3Api::class)
+```
+
+Significa "sé que esta pieza aún puede cambiar en futuras versiones y la uso igualmente".
+
+**8. Todo junto (con libros)**
+
+```kotlin
+// MainActivity.kt, dentro de onCreate
+setContent {
+    MyAppTheme {
+        Scaffold(
+            modifier = Modifier.fillMaxSize(),
+            topBar = { LibraryTopBar() }      // tu TopAppBar, en su propia función @Composable
+        ) { innerPadding ->
+            BookListScreen(
+                books = fakeBooks,
+                modifier = Modifier.padding(innerPadding)
+            )
+        }
+    }
+}
+```
+
+Para la preview de la pantalla, haz lo mismo que con `TaskCard`: `@Preview` + tu tema + la pantalla con `fakeTasks`. Con el modo interactivo podrás hacer scroll y marcar tareas.
+
+**9. Errores típicos**
+
+| Síntoma | Causa |
+|---|---|
+| La app se cierra: *"Key 0 was already used"* | Tareas sin `id` en `FakeData`: todas valen 0 |
+| La primera tarjeta queda tapada por la barra | No aplicaste `innerPadding` al contenido |
+| `items(...)` en rojo o con tipos raros | Import equivocado: tiene que ser `androidx.compose.foundation.lazy.items` |
+| *"This material API is experimental"* | Falta `@OptIn(ExperimentalMaterial3Api::class)` |
+| Marco una tarea y se marcan todas | Usas un solo `Boolean` para toda la lista en vez del `Set` de ids |
+| Las tarjetas están pegadas entre sí | Falta `verticalArrangement = Arrangement.spacedBy(...)` |
+
+✍️ **Enunciado:** crea en `ui` un archivo `FakeData.kt` con una lista de ~8 tareas de ejemplo (de los 3 tipos, cada una con su `id`) y una pantalla `ui/screens/TaskListScreen.kt` que las muestre y guarde qué tareas están marcadas como hechas. Ponla en `MainActivity` dentro de un `Scaffold` con una `TopAppBar` que diga el nombre de tu app.
 
 ✅ La app muestra la lista con tu tema y se puede hacer scroll.
 

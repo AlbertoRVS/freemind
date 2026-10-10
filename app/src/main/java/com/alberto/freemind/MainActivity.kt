@@ -6,11 +6,17 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.res.stringResource
+import com.alberto.freemind.ui.fakeTasks
+import com.alberto.freemind.ui.screens.TaskListScreen
 import com.alberto.freemind.ui.theme.FreeMindTheme
 
 class MainActivity : ComponentActivity() {
@@ -19,9 +25,12 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             FreeMindTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
+                Scaffold(
+                    topBar = { FreeMindAppBar() },
+                    modifier = Modifier.fillMaxSize()
+                ) { innerPadding ->
+                    TaskListScreen(
+                        tasks = fakeTasks,
                         modifier = Modifier.padding(innerPadding)
                     )
                 }
@@ -30,18 +39,15 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+/**TOP BAR*/
 @Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
+@OptIn(ExperimentalMaterial3Api::class)
+fun FreeMindAppBar() {
+    TopAppBar(
+        title = { Text(stringResource(R.string.app_name)) },
+        colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = MaterialTheme.colorScheme.primary,
+            titleContentColor = MaterialTheme.colorScheme.onPrimary
+        )
     )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    FreeMindTheme {
-        Greeting("Android")
-    }
 }

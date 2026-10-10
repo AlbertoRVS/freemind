@@ -49,13 +49,13 @@
 | **0.3** | Git y GitHub | 📦 | — | `bea0e7a` |
 | **1.1** | Paquetes | 📦 | | `583b022` |
 | **1.2** | `enum class` | 📦 | | `583b022` |
-| **1.3** | `data class` Task | ✅ | | |
-| **1.4** | Reglas de negocio con `when` | ✅ | | |
-| **1.5** | Tests unitarios | ✅ | | |
-| **2.1** | Tema Ghibli | ⬜ | | |
-| **2.2** | `TaskCard` y previews | ⬜ | | |
-| **2.3** | Estado y state hoisting | ⬜ | | |
-| **2.4** | `LazyColumn` | ⬜ | | |
+| **1.3** | `data class` Task | 📦 | | `08a88aa` + test `e07d693` |
+| **1.4** | Reglas de negocio con `when` | 📦 | | `70b71ae` |
+| **1.5** | Tests unitarios | 📦 | | `b78774c` |
+| **2.1** | Tema Ghibli | 📦 | | `77c370f` |
+| **2.2** | `TaskCard` y previews | 📦 | | `533e5bd` + konpeitos `2273536` |
+| **2.3** | Estado y state hoisting | 📦 | | `8e84a5f` |
+| **2.4** | `LazyColumn` | ✅ | | |
 | **3.1** | Dependencias | ⬜ | | |
 | **3.2** | Navegación y barra inferior | ⬜ | | |
 | **4.1** | Room y KSP | ⬜ | | |
@@ -88,6 +88,9 @@
 | **10.4** | README y release | ⬜ | | |
 
 **Repositorio GitHub:** https://github.com/AlbertoRVS/freemind
+
+**Pull Requests de fase:**
+- Fase 1 → `main`: https://github.com/AlbertoRVS/freemind/pull/1 (merge commit, 07/10/2026)
 
 ---
 
@@ -491,7 +494,156 @@ Lo que encontré en el proyecto vacío original:
 
 ## Fase 2 · Compose y tema Ghibli
 
-_(sin fichas todavía)_
+### Actividad 2.1 · El tema: colores y tipografía Ghibli
+
+**Estado:** ✅ Aprobada  ·  **Revisión nº:** 3  ·  **Fecha:** 07/10/2026
+**Archivos revisados:** `ui/theme/Color.kt`, `ui/theme/Theme.kt`, `ui/theme/Type.kt`, `MainActivity.kt`, `res/font/`
+
+#### ✅ Criterios de aceptación
+- [x] Paleta propia en `Color.kt` (claro y oscuro)
+- [x] `Theme.kt` con esquema claro y oscuro y `dynamicColor = false`
+- [x] Fuente propia (Zen Maru Gothic, 5 pesos) aplicada en `Type.kt`
+- [x] La app arranca con tu fondo y tu fuente, en claro y en oscuro (previews de día y de noche)
+
+#### 🌟 Lo que está bien
+- Roles bien asignados: `primary` verde bosque, `secondary` cielo, `tertiary` atardecer (para los caramelos), `background` papel y `surface` crema.
+- Modo oscuro bien invertido: fondo bosque de noche, `surface` algo más clara y un `primary` más claro (MossLight) para que contraste.
+- Todos los colores `on…` definidos y con buen contraste (texto oscuro sobre colores claros y al revés).
+- Color.kt limpio: sin los Purple/Pink de la plantilla y con nombres en PascalCase.
+- Dos `@Preview` (normal y `UI_MODE_NIGHT_YES`) envueltas en `Surface` para ver el tema real.
+
+#### ❌ Errores (obligatorio corregir)
+> **Rev. 2:** ✅ todos corregidos.
+1. **`res/font/`**: los `.ttf` tenían mayúsculas y guiones (`ZenMaruGothic-Regular.ttf`). En `res/` solo se admiten minúsculas, números y `_`, así que no compilaba. Renombrados a `zen_maru_gothic_*.ttf`.
+2. **`Theme.kt`**: la paleta de día estaba en `DarkColorScheme` (con `background = BlueSky` y `secondary = WaterPaper`) y el claro seguía con los Purple.
+3. **`Theme.kt`**: `dynamicColor = true`. En Android 12+ el sistema ignora tu paleta.
+
+#### ⚠️ A mejorar (obligatorio corregir)
+> **Rev. 3:** ✅ corregidos.
+1. Faltaban `onSecondary`, `onTertiary` y `onSurface` en el claro, y el oscuro era una copia del claro.
+2. Las previews salían en blanco y negro: `Greeting` es solo un `Text` sin fondo. Se arregla envolviéndolo en `Surface`.
+3. `import android.app.Activity` sin usar, y bloque de comentario de la plantilla.
+
+#### 💡 Sugerencias (opcional)
+- `@Preview()` → `@Preview`: los paréntesis vacíos sobran.
+
+#### 🔁 Historial de revisiones
+- Rev. 3 (07/10): previews con `Surface`, ya se ven los dos temas. **Aprobada.**
+- Rev. 2 (07/10): Color.kt y Theme.kt completos (claro y oscuro, `dynamicColor = false`). Previews sin fondo.
+- Rev. 1 (07/10): guía de roles de color. Fuentes con nombres no válidos, paleta en el esquema equivocado y `dynamicColor = true`. **Type.kt:** Alberto escribió la `FontFamily` y el patrón `base.x.copy(fontFamily = ...)`; los 15 estilos los completó Claude a petición suya.
+
+#### 📦 Commit autorizado
+- [x] ✅ Aprobada: `feat(ui): add Ghibli color scheme and typography` (incluye `res/font/` y `MainActivity.kt`).
+
+### Actividad 2.2 · Composables, `Modifier` y `@Preview`
+
+**Estado:** ✅ Aprobada  ·  **Revisión nº:** 3  ·  **Fecha:** 07/10/2026
+**Archivos revisados:** `ui/components/TaskCard.kt`, `res/values/strings.xml`, `app/build.gradle.kts`, `gradle/libs.versions.toml`
+
+#### ✅ Criterios de aceptación
+- [x] Las 3 previews se ven bien (una por tipo de tarea)
+- [x] `TaskCard` recibe un `modifier` como parámetro
+- [x] Los textos fijos vienen de `strings.xml` con `stringResource(R.string.xxx)`
+- [x] Muestra título, descripción solo si no está vacía, caramelos con 🍬 y fecha si la tiene
+
+#### 🌟 Lo que está bien
+- Estructura `Card` → `Row` → `Column(weight(1f))` bien entendida, con el `modifier` recibido aplicado a la `Card` y no a los hijos.
+- Descripción condicional con `isNotBlank()` y fecha solo si no es `null`.
+- Ya usas los estilos del tema (`MaterialTheme.typography...`) y envuelves las previews en `FreeMindTheme` + `Surface`.
+- Datos de las previews fijos (`LocalDate.of`), sin `now()`.
+
+#### ❌ Errores (obligatorio corregir)
+1. **`TaskCard.kt:60`**: `mandatoryTask` se crea con `TaskType.OPTIONAL`, así que no hay preview de Obligatoria.
+2. **`TaskCard.kt:34`**: los caramelos se muestran como un número suelto, sin 🍬 y sin `strings.xml`. Pista: `<string name="..">%1$d 🍬</string>` y `stringResource(R.string.xxx, task.candies)`. Su sitio natural es el `Text("")` vacío de la línea 43, a la derecha de la tarjeta.
+3. **`build.gradle.kts` y `libs.versions.toml`**: se ha añadido `androidx.ui` con versión fija `1.12.1`. Compose UI ya viene con el BOM (`libs.androidx.compose.ui`), y una versión fija se salta el BOM y puede mezclar versiones. Deshacer con `git restore app/build.gradle.kts gradle/libs.versions.toml`.
+
+#### ⚠️ A mejorar (obligatorio corregir)
+1. **`TaskCard.kt:17`**: import de `Greeting` sin usar.
+2. La fecha sale como `2026-10-11` y sin texto fijo. Usa una cadena con parámetro (`%1$s`) para que se lea como una fecha de entrega.
+3. Las previews deben ser `private`: solo sirven dentro de este archivo.
+4. Formato: `today.plusDays(4),)` y cierres de paréntesis en la misma línea. Ctrl+Alt+L.
+
+#### 💡 Sugerencias (opcional)
+- Caramelos con `color = MaterialTheme.colorScheme.tertiary`: para eso definiste el color atardecer.
+- Pon una preview en modo claro, y no las tres en noche.
+- El repo es público: los textos de ejemplo de las previews los puede leer cualquiera.
+- Tildes en los textos de ejemplo ("médico", "Urólogo").
+
+#### ❓ Preguntas para ti
+- ¿Por qué crees que el `modifier` del parámetro se usa en la `Card` y en el `Row` se escribe `Modifier` con mayúscula?
+
+#### 🔁 Historial de revisiones
+- Extra (07/10, a petición de Alberto): Claude añadió los konpeitos de los Susuwatari en lugar de 🍬. Son 5 vectores `res/drawable/ic_konpeito_*.xml` y `ui/components/Konpeito.kt` (color al azar con `remember { lista.random() }`). En `strings.xml`, `candy` se cambia por `candies` ("caramelos"), usado como `contentDescription`.
+- Rev. 3 (07/10): ✅ todo corregido: `task.candies` como `Int`, caramelos a la derecha y fecha con `R.string.date`. El "todo en rojo" era el `git restore` de `build.gradle.kts` sin volver a sincronizar Gradle. Claude quitó las dos líneas de `androidx-ui` que quedaban en `libs.versions.toml` y dio formato al bloque de la fecha. **Aprobada.**
+- Rev. 2 (07/10): ✅ tipo Obligatoria, import, `private` y formato. ❌ `stringResource(R.string.candy, task.candies.toString())`: `%1$d` espera un `Int` y recibe un `String`, lo que provoca el *render error* de las previews (en el móvil sería un cierre de la app). Siguen pendientes: los caramelos a la derecha, el texto de la fecha y deshacer la dependencia `androidx.ui`.
+- Rev. 1 (07/10): buena estructura. Falta el tipo Obligatoria, los caramelos con 🍬 desde `strings.xml` y quitar la dependencia `androidx.ui` añadida.
+
+#### 📦 Commit autorizado
+- [x] ✅ Aprobada: `feat(ui): add TaskCard component`
+
+### Actividad 2.3 · Estado: `remember` y `mutableStateOf`
+
+**Estado:** 🟡 Aprobada con retoques  ·  **Revisión nº:** 1  ·  **Fecha:** 10/10/2026
+**Archivos revisados:** `ui/components/TaskCard.kt`
+
+#### ✅ Criterios de aceptación
+- [x] `TaskCard` recibe `isDone: Boolean` y `onDoneClick: () -> Unit`
+- [x] `Checkbox` con `checked = isDone` y `onCheckedChange` que avisa con `onDoneClick()`
+- [x] Las previews controlan el estado con `var ... by remember { mutableStateOf(false) }`
+- [x] Funciona en modo interactivo
+
+#### 🌟 Lo que está bien
+- State hoisting correcto: la tarjeta no guarda estado; lo recibe y avisa.
+- `by` + `var` con los imports `getValue`/`setValue`.
+- Cada preview tiene su propio estado, así que se marcan por separado.
+
+#### ⚠️ A mejorar (obligatorio corregir)
+1. **`TaskCard.kt:32-37`**: orden de parámetros. Convención de Compose: primero los obligatorios (`task`, `isDone`, `onDoneClick`), luego `modifier: Modifier = Modifier`. Así se puede llamar `TaskCard(task, isDone, onDoneClick)` sin nombrar nada, y `modifier` queda como primer parámetro opcional.
+2. **Previews**: `isRead` viene del ejemplo de libros. En tu dominio es `isDone`, como el parámetro.
+3. Formato: el import `setValue` está fuera de orden (Ctrl+Alt+O los ordena), la línea en blanco 64 sobra y `})` en la línea 127. Ctrl+Alt+L.
+
+#### 💡 Sugerencias (opcional)
+- En las apps de tareas, el check suele ir **a la izquierda** del título: es lo primero que busca el ojo.
+
+#### 🔁 Historial de revisiones
+- Rev. 1 (10/10): funciona y el state hoisting está bien entendido. Faltan retoques de orden de parámetros, nombres y formato.
+
+#### 📦 Commit autorizado
+- [x] ✅ Aprobada tras los retoques (no hace falta volver a revisar): `feat(ui): add done checkbox to TaskCard`
+
+### Actividad 2.4 · Listas con `LazyColumn`
+
+**Estado:** ✅ Aprobada  ·  **Revisión nº:** 2  ·  **Fecha:** 10/10/2026
+**Archivos revisados:** `ui/FakeData.kt`, `ui/screens/TaskListScreen.kt`, `MainActivity.kt`
+
+#### ✅ Criterios de aceptación
+- [x] `FakeData.kt` con ~8 tareas de los 3 tipos, cada una con su `id`
+- [x] `TaskListScreen` con `LazyColumn`, `key` y el estado de hechas
+- [x] `Scaffold` con `TopAppBar` con el nombre de la app
+- [x] La app muestra la lista con tu tema y se puede hacer scroll
+
+#### 🌟 Lo que está bien
+- `TaskListScreen` muy limpia: `Set` de ids con `in`, `+` y `-`, `key = { it.id }`, `contentPadding` y `spacedBy`.
+- `innerPadding` aplicado a la pantalla dentro del `Scaffold`.
+- Ids del 1 al 8 sin repetir y los tres tipos representados.
+
+#### ❌ Errores (obligatorio corregir)
+1. **`MainActivity.kt:43-47`**: tu función se llama `TopAppBar`, igual que la de Material. Dentro no llama a ninguna barra: `title = { ... }` es una asignación a una variable que no existe. Además falta `import androidx.compose.material3.TopAppBar`. Pista: renombra tu función (por ejemplo `FreeMindTopBar`) y, dentro, **llama** a la `TopAppBar` de Material pasándole `title = { ... }` como parámetro.
+
+#### ⚠️ A mejorar (obligatorio corregir)
+1. `MainActivity`: `Greeting` y sus dos previews ya no los usa nadie. Bórralos (y los imports que queden sin usar).
+
+#### 💡 Sugerencias (opcional)
+- `colors = TopAppBarDefaults.topAppBarColors(...)` con `primary`/`onPrimary` para que la barra sea verde bosque.
+- Una preview de `TaskListScreen` con `fakeTasks` para ver la lista sin instalar la app.
+
+#### 🔁 Historial de revisiones
+- Extra (10/10): preview de `TaskListScreen` con `fakeTasks`. Las tarjetas salían gris lavanda porque `Card` usa `surfaceContainerHighest`, que no estaba en el tema. Claude lo añadió a los dos esquemas (Cream / NightForest) y dio a la preview un `Surface` a pantalla completa con color `background`.
+- Rev. 2 (10/10): ✅ `FreeMindAppBar` llama a la `TopAppBar` de Material, con colores `primary`/`onPrimary`. `Greeting` y previews antiguas borrados. **Aprobada.** Queda como extra la preview de `TaskListScreen` con `fakeTasks`.
+- Rev. 1 (10/10): lista y datos bien. La barra superior no se crea: la función se llama igual que la de Material y no la llama.
+
+#### 📦 Commit autorizado
+- [x] ✅ Aprobada: `feat(ui): add task list screen with fake data`
 
 ## Fase 3 · Navegación
 
