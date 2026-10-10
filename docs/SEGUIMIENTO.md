@@ -53,9 +53,9 @@
 | **1.4** | Reglas de negocio con `when` | 📦 | | `70b71ae` |
 | **1.5** | Tests unitarios | 📦 | | `b78774c` |
 | **2.1** | Tema Ghibli | 📦 | | `77c370f` |
-| **2.2** | `TaskCard` y previews | ✅ | | |
-| **2.3** | Estado y state hoisting | ⬜ | | |
-| **2.4** | `LazyColumn` | ⬜ | | |
+| **2.2** | `TaskCard` y previews | 📦 | | `533e5bd` + konpeitos `2273536` |
+| **2.3** | Estado y state hoisting | 📦 | | `8e84a5f` |
+| **2.4** | `LazyColumn` | ✅ | | |
 | **3.1** | Dependencias | ⬜ | | |
 | **3.2** | Navegación y barra inferior | ⬜ | | |
 | **4.1** | Room y KSP | ⬜ | | |
@@ -573,12 +573,77 @@ Lo que encontré en el proyecto vacío original:
 - ¿Por qué crees que el `modifier` del parámetro se usa en la `Card` y en el `Row` se escribe `Modifier` con mayúscula?
 
 #### 🔁 Historial de revisiones
+- Extra (07/10, a petición de Alberto): Claude añadió los konpeitos de los Susuwatari en lugar de 🍬. Son 5 vectores `res/drawable/ic_konpeito_*.xml` y `ui/components/Konpeito.kt` (color al azar con `remember { lista.random() }`). En `strings.xml`, `candy` se cambia por `candies` ("caramelos"), usado como `contentDescription`.
 - Rev. 3 (07/10): ✅ todo corregido: `task.candies` como `Int`, caramelos a la derecha y fecha con `R.string.date`. El "todo en rojo" era el `git restore` de `build.gradle.kts` sin volver a sincronizar Gradle. Claude quitó las dos líneas de `androidx-ui` que quedaban en `libs.versions.toml` y dio formato al bloque de la fecha. **Aprobada.**
 - Rev. 2 (07/10): ✅ tipo Obligatoria, import, `private` y formato. ❌ `stringResource(R.string.candy, task.candies.toString())`: `%1$d` espera un `Int` y recibe un `String`, lo que provoca el *render error* de las previews (en el móvil sería un cierre de la app). Siguen pendientes: los caramelos a la derecha, el texto de la fecha y deshacer la dependencia `androidx.ui`.
 - Rev. 1 (07/10): buena estructura. Falta el tipo Obligatoria, los caramelos con 🍬 desde `strings.xml` y quitar la dependencia `androidx.ui` añadida.
 
 #### 📦 Commit autorizado
 - [x] ✅ Aprobada: `feat(ui): add TaskCard component`
+
+### Actividad 2.3 · Estado: `remember` y `mutableStateOf`
+
+**Estado:** 🟡 Aprobada con retoques  ·  **Revisión nº:** 1  ·  **Fecha:** 10/10/2026
+**Archivos revisados:** `ui/components/TaskCard.kt`
+
+#### ✅ Criterios de aceptación
+- [x] `TaskCard` recibe `isDone: Boolean` y `onDoneClick: () -> Unit`
+- [x] `Checkbox` con `checked = isDone` y `onCheckedChange` que avisa con `onDoneClick()`
+- [x] Las previews controlan el estado con `var ... by remember { mutableStateOf(false) }`
+- [x] Funciona en modo interactivo
+
+#### 🌟 Lo que está bien
+- State hoisting correcto: la tarjeta no guarda estado; lo recibe y avisa.
+- `by` + `var` con los imports `getValue`/`setValue`.
+- Cada preview tiene su propio estado, así que se marcan por separado.
+
+#### ⚠️ A mejorar (obligatorio corregir)
+1. **`TaskCard.kt:32-37`**: orden de parámetros. Convención de Compose: primero los obligatorios (`task`, `isDone`, `onDoneClick`), luego `modifier: Modifier = Modifier`. Así se puede llamar `TaskCard(task, isDone, onDoneClick)` sin nombrar nada, y `modifier` queda como primer parámetro opcional.
+2. **Previews**: `isRead` viene del ejemplo de libros. En tu dominio es `isDone`, como el parámetro.
+3. Formato: el import `setValue` está fuera de orden (Ctrl+Alt+O los ordena), la línea en blanco 64 sobra y `})` en la línea 127. Ctrl+Alt+L.
+
+#### 💡 Sugerencias (opcional)
+- En las apps de tareas, el check suele ir **a la izquierda** del título: es lo primero que busca el ojo.
+
+#### 🔁 Historial de revisiones
+- Rev. 1 (10/10): funciona y el state hoisting está bien entendido. Faltan retoques de orden de parámetros, nombres y formato.
+
+#### 📦 Commit autorizado
+- [x] ✅ Aprobada tras los retoques (no hace falta volver a revisar): `feat(ui): add done checkbox to TaskCard`
+
+### Actividad 2.4 · Listas con `LazyColumn`
+
+**Estado:** ✅ Aprobada  ·  **Revisión nº:** 2  ·  **Fecha:** 10/10/2026
+**Archivos revisados:** `ui/FakeData.kt`, `ui/screens/TaskListScreen.kt`, `MainActivity.kt`
+
+#### ✅ Criterios de aceptación
+- [x] `FakeData.kt` con ~8 tareas de los 3 tipos, cada una con su `id`
+- [x] `TaskListScreen` con `LazyColumn`, `key` y el estado de hechas
+- [x] `Scaffold` con `TopAppBar` con el nombre de la app
+- [x] La app muestra la lista con tu tema y se puede hacer scroll
+
+#### 🌟 Lo que está bien
+- `TaskListScreen` muy limpia: `Set` de ids con `in`, `+` y `-`, `key = { it.id }`, `contentPadding` y `spacedBy`.
+- `innerPadding` aplicado a la pantalla dentro del `Scaffold`.
+- Ids del 1 al 8 sin repetir y los tres tipos representados.
+
+#### ❌ Errores (obligatorio corregir)
+1. **`MainActivity.kt:43-47`**: tu función se llama `TopAppBar`, igual que la de Material. Dentro no llama a ninguna barra: `title = { ... }` es una asignación a una variable que no existe. Además falta `import androidx.compose.material3.TopAppBar`. Pista: renombra tu función (por ejemplo `FreeMindTopBar`) y, dentro, **llama** a la `TopAppBar` de Material pasándole `title = { ... }` como parámetro.
+
+#### ⚠️ A mejorar (obligatorio corregir)
+1. `MainActivity`: `Greeting` y sus dos previews ya no los usa nadie. Bórralos (y los imports que queden sin usar).
+
+#### 💡 Sugerencias (opcional)
+- `colors = TopAppBarDefaults.topAppBarColors(...)` con `primary`/`onPrimary` para que la barra sea verde bosque.
+- Una preview de `TaskListScreen` con `fakeTasks` para ver la lista sin instalar la app.
+
+#### 🔁 Historial de revisiones
+- Extra (10/10): preview de `TaskListScreen` con `fakeTasks`. Las tarjetas salían gris lavanda porque `Card` usa `surfaceContainerHighest`, que no estaba en el tema. Claude lo añadió a los dos esquemas (Cream / NightForest) y dio a la preview un `Surface` a pantalla completa con color `background`.
+- Rev. 2 (10/10): ✅ `FreeMindAppBar` llama a la `TopAppBar` de Material, con colores `primary`/`onPrimary`. `Greeting` y previews antiguas borrados. **Aprobada.** Queda como extra la preview de `TaskListScreen` con `fakeTasks`.
+- Rev. 1 (10/10): lista y datos bien. La barra superior no se crea: la función se llama igual que la de Material y no la llama.
+
+#### 📦 Commit autorizado
+- [x] ✅ Aprobada: `feat(ui): add task list screen with fake data`
 
 ## Fase 3 · Navegación
 
