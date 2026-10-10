@@ -6,10 +6,15 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Card
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -24,7 +29,12 @@ import java.time.LocalDate
 
 
 @Composable
-fun TaskCard(task: Task, modifier: Modifier = Modifier) {
+fun TaskCard(
+    task: Task,
+    isDone: Boolean,
+    onDoneClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
     Card(modifier = modifier.fillMaxWidth()) {
         Row(
             modifier = Modifier.padding(16.dp),
@@ -49,7 +59,9 @@ fun TaskCard(task: Task, modifier: Modifier = Modifier) {
                     contentDescription = stringResource(R.string.candies),
                     modifier = Modifier.padding(start = 4.dp)
                 )
+                Checkbox(checked = isDone, onCheckedChange = { onDoneClick() })
             }
+
         }
     }
 }
@@ -77,8 +89,13 @@ private val mandatoryTask: Task = Task(
 @Composable
 private fun PunctualTaskPreview() {
     FreeMindTheme {
+        var isDone by remember { mutableStateOf(false) }
         Surface {
-            TaskCard(punctualTask)
+            TaskCard(
+                punctualTask,
+                isDone = isDone,
+                onDoneClick = { isDone = !isDone }
+            )
         }
     }
 }
@@ -87,8 +104,13 @@ private fun PunctualTaskPreview() {
 @Composable
 private fun OptionalTaskPreview() {
     FreeMindTheme {
+        var isDone by remember { mutableStateOf(false) }
         Surface {
-            TaskCard(optionalTask)
+            TaskCard(
+                optionalTask,
+                isDone = isDone,
+                onDoneClick = { isDone = !isDone }
+            )
         }
     }
 }
@@ -97,8 +119,12 @@ private fun OptionalTaskPreview() {
 @Composable
 private fun MandatoryTaskPreview() {
     FreeMindTheme {
+        var isDone by remember { mutableStateOf(false) }
         Surface {
-            TaskCard(mandatoryTask)
+            TaskCard(
+                mandatoryTask,
+                isDone = isDone,
+                onDoneClick = { isDone = !isDone })
         }
     }
 }
