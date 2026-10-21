@@ -1096,10 +1096,203 @@ dependencies { implementation(libs.androidx.navigation.compose) }
 
 🎯 **Objetivo:** navegar entre las 4 pantallas con una `NavigationBar`.
 
-📖 **Teoría breve**
-- **Ruta**: identificador de una pantalla. Con Navigation moderno se definen como objetos `@Serializable`.
-- **NavController**: el "mando" que navega.
-- **NavHost**: el contenedor que muestra la pantalla de la ruta actual.
+📖 **Teoría ampliada**
+
+**1. Las tres piezas de Navigation**
+
+| Pieza | Qué es | Analogía |
+|---|---|---|
+| **Ruta** | El "nombre" de una pantalla. Con Navigation moderno es un tipo de Kotlin marcado con `@Serializable`. | La dirección de una casa |
+| **NavController** | El objeto que sabe en qué pantalla estás y te lleva a otra (`navigate(...)`, `popBackStack()`). | El GPS |
+| **NavHost** | El hueco de la pantalla donde se dibuja la pantalla de la ruta actual. Dentro le dices qué pantalla corresponde a cada ruta. | El mapa con todas las casas |
+
+```kotlin
+val navController = rememberNavController()        // crea el "GPS" (y lo recuerda entre recomposiciones)
+
+NavHost(navController = navController, startDestination = Starters) {
+    composable<Starters> { StartersScreen() }       // "si la ruta es Starters, dibuja StartersScreen"
+    composable<Desserts> { DessertsScreen() }
+}
+
+navController.navigate(Desserts)                    // ir a Desserts
+navController.popBackStack()                        // volver atrás
+```
+
+**2. ¿Qué es serializar?**
+
+**Serializar** es convertir un objeto en algo que se puede guardar o enviar: un texto (por ejemplo JSON) o bytes. **Deserializar** es lo contrario: reconstruir el objeto a partir de ese texto.
+
+```
+RecipeDetail(recipeId = 42)   ──serializar──>   {"recipeId":42}
+{"recipeId":42}               ──deserializar──> RecipeDetail(recipeId = 42)
+```
+
+Lo usarás mucho fuera de este proyecto: es lo que pasa cuando una app recibe datos de internet (JSON) y los convierte en objetos Kotlin.
+
+**3. ¿Por qué Navigation necesita `@Serializable`?**
+
+Android puede **destruir y recrear** tu pantalla: al girar el móvil, o cuando el sistema cierra tu app en segundo plano para liberar memoria. Al volver, tiene que recordar **en qué pantalla estabas y con qué datos** (por ejemplo, "el detalle de la receta 42"). Para guardarlo, convierte la ruta en texto, y para eso necesita saber serializarla.
+
+Además, como las rutas son tipos de Kotlin y no textos sueltos (`"recipe/42"`), el compilador te avisa si te equivocas:
+
+```kotlin
+navController.navigate("recipe/42")         // ❌ antiguo: si escribes "recipee/42", compila y falla en el móvil
+navController.navigate(RecipeDetail(42))    // ✅ moderno: si te equivocas, no compila
+```
+
+**4. Sintaxis básica de `@Serializable`**
+
+```kotlin
+import kotlinx.serialization.Serializable   // ⚠️ este, NO java.io.Serializable
+
+@Serializable
+object Starters                              // ruta SIN datos: un object (solo existe uno)
+
+@Serializable
+data class RecipeDetail(val recipeId: Long) // ruta CON datos: una data class con sus argumentos
+
+@Serializable
+data class RecipeSearch(
+    val query: String,
+    val vegetarian: Boolean = false,         // puede tener valores por defecto
+    val maxMinutes: Int? = null              // y propiedades nullables
+)
+```
+
+- **¿`object` o `data class`?** Si la pantalla siempre es la misma (la lista de Puntuales), `object`. Si necesita un dato para saber qué mostrar (editar *la tarea 7*), `data class` con ese dato.
+- Las propiedades tienen que ser de tipos que se sepan serializar: `Int`, `Long`, `String`, `Boolean`, `Double`, enums (como tu `TaskType`) y otras clases `@Serializable`. Nullables y valores por defecto, sin problema.
+- `@Serializable` **no hace nada por sí solo**: el plugin `kotlin.plugin.serialization` (el que añadiste en la 3.1) lee la anotación al compilar y **genera el código** que convierte la clase a texto y al revés. Sin el plugin, la anotación no sirve.
+
+**5. Leer los datos de una ruta**
+
+En el `NavHost`, `toRoute<T>()` reconstruye la ruta y te da sus propiedades:
+
+```kotlin
+composable<RecipeDetail> { backStackEntry ->
+    val route = backStackEntry.toRoute<RecipeDetail>()   // RecipeDetail(recipeId = 42)
+    RecipeDetailScreen(recipeId = route.recipeId)
+}
+```
+
+Esto lo usarás en la Fase 6 (formulario de edición). En la 3.2 tus 4 rutas no llevan datos, así que todas serán `object`.
+
+**6. Curiosidad: verlo con tus propios ojos**
+
+Si quieres comprobar qué hace la serialización, en un test normal (`src/test`) puedes hacer:
+
+```kotlin
+println(Json.encodeToString(RecipeSearch(query = "ramen", maxMinutes = 30)))
+// {"query":"ramen","maxMinutes":30}
+```
+
+(`vegetarian` no sale porque tiene su valor por defecto.) No es parte del enunciado, solo para que veas que no es magia.
+
+**7. La barra inferior (`NavigationBar`)**
+
+`NavigationBar` es la barra de pestañas de abajo. Dentro lleva un `NavigationBarItem` por cada pestaña, y cada pestaña tiene 4 parámetros:
+
+| Parámetro | Qué es |
+|---|---|
+| `selected` | `Boolean`: ¿es la pestaña en la que estoy? (se pinta resaltada) |
+| `onClick` | Qué pasa al pulsarla: navegar a su ruta |
+| `icon` | Lambda con un `Icon(...)` |
+| `label` | Lambda con un `Text(...)` |
+
+Se monta en tres archivos de `ui/navigation` más `MainActivity`:
+
+```
+ui/navigation/
+├── Routes.kt                 ← las rutas (@Serializable object ...)
+├── BottomDestinations.kt     ← la lista de pestañas (A)
+├── FreeMindBottomBar.kt      ← la barra (B)
+└── FreeMindNavHost.kt        ← la tabla ruta → pantalla
+MainActivity.kt               ← lo junta todo en el Scaffold (C)
+```
+
+**A. La lista de pestañas.** Para no escribir 4 veces lo mismo, guardas los datos de cada pestaña en una `data class` y haces una lista:
+
+```kotlin
+data class BottomDestination(
+    val route: Any,                 // Any = "cualquier tipo": vale cualquiera de tus rutas
+    val icon: ImageVector,          // el tipo de los iconos de Icons.Default
+    @StringRes val label: Int       // un R.string.xxx (es un Int; @StringRes avisa si pasas otro número)
+)
+
+val recipeDestinations = listOf(
+    BottomDestination(Starters, Icons.Default.Restaurant, R.string.starters),
+    BottomDestination(Desserts, Icons.Default.Cake, R.string.desserts),
+)
+```
+
+**B. La barra.** Recorre la lista con `forEach` y crea una pestaña por elemento:
+
+```kotlin
+@Composable
+fun RecipesBottomBar(navController: NavHostController) {
+    // ¿En qué pantalla estoy? Es un estado: se actualiza solo cada vez que navegas
+    val backStack by navController.currentBackStackEntryAsState()
+
+    NavigationBar {
+        recipeDestinations.forEach { dest ->
+            NavigationBarItem(
+                selected = backStack?.destination?.hasRoute(dest.route::class) == true,
+                onClick = {
+                    navController.navigate(dest.route) {
+                        popUpTo(navController.graph.findStartDestination().id) { saveState = true }
+                        launchSingleTop = true
+                        restoreState = true
+                    }
+                },
+                icon = { Icon(dest.icon, contentDescription = null) },
+                label = { Text(stringResource(dest.label)) }
+            )
+        }
+    }
+}
+```
+
+- `forEach { dest -> ... }` recorre la lista (como `items` en una `LazyColumn`); `dest` es la pestaña de esa vuelta.
+- `dest.route::class` es "la clase de esa ruta"; `hasRoute(...)` pregunta "¿la pantalla actual es de esa ruta?".
+- `?.` y `== true`: mientras arranca la app, `backStack` puede ser `null`; entonces la pestaña sale no seleccionada.
+- El bloque del `navigate`:
+  - `popUpTo(...)`: al cambiar de pestaña borra el historial hasta la primera pantalla, para que "atrás" no recorra 20 pestañas.
+  - `saveState` / `restoreState`: cada pestaña recuerda su scroll y lo recupera al volver.
+  - `launchSingleTop`: si pulsas la pestaña en la que ya estás, no abre otra copia encima.
+
+**C. Juntarlo en `MainActivity`**, dentro de `setContent`:
+
+```kotlin
+val navController = rememberNavController()
+Scaffold(
+    topBar = { RecipesTopBar() },
+    bottomBar = { RecipesBottomBar(navController) },              // el mismo navController...
+    modifier = Modifier.fillMaxSize()
+) { innerPadding ->
+    RecipesNavHost(navController, Modifier.padding(innerPadding)) // ...que el NavHost
+}
+```
+
+La barra y el `NavHost` tienen que compartir **el mismo** `navController`: si no, la barra cambiaría de pestaña y la pantalla no se enteraría.
+
+**Imports que Android Studio no siempre ofrece:**
+
+```kotlin
+import androidx.navigation.NavDestination.Companion.hasRoute
+import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.compose.rememberNavController
+```
+
+⚠️ Si Alt+Enter te ofrece **"Add dependency on..."**, di que no: casi siempre te falta un import, no una librería.
+
+**8. Errores típicos**
+
+| Síntoma | Causa |
+|---|---|
+| *"Serializer for class 'X' is not found"* | Falta `@Serializable` en la ruta, o falta el plugin `kotlin.plugin.serialization` |
+| `@Serializable` no hace nada o pide un import raro | Importaste `java.io.Serializable` en vez de `kotlinx.serialization.Serializable` |
+| *"Route X could not find any NavDestination"* | Navegas a una ruta que no tiene su `composable<X> { }` en el `NavHost` |
+| Cada clic en la pestaña apila otra copia de la pantalla | Falta `launchSingleTop = true` (ver pistas del enunciado) |
 
 🧩 **Ejemplo análogo (app de recetas):**
 
