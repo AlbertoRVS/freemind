@@ -1,4 +1,4 @@
-package com.alberto.freemind.ui
+package com.alberto.freemind.data
 
 import com.alberto.freemind.domain.Frequency
 import com.alberto.freemind.domain.Task

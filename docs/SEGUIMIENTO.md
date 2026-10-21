@@ -55,9 +55,9 @@
 | **2.1** | Tema Ghibli | 📦 | | `77c370f` |
 | **2.2** | `TaskCard` y previews | 📦 | | `533e5bd` + konpeitos `2273536` |
 | **2.3** | Estado y state hoisting | 📦 | | `8e84a5f` |
-| **2.4** | `LazyColumn` | ✅ | | |
-| **3.1** | Dependencias | ⬜ | | |
-| **3.2** | Navegación y barra inferior | ⬜ | | |
+| **2.4** | `LazyColumn` | 📦 | | `f91ae0b` |
+| **3.1** | Dependencias | 📦 | | `b39c906` |
+| **3.2** | Navegación y barra inferior | ✅ | | |
 | **4.1** | Room y KSP | ⬜ | | |
 | **4.2** | Entidades | ⬜ | | |
 | **4.3** | TypeConverters | ⬜ | | |
@@ -91,6 +91,7 @@
 
 **Pull Requests de fase:**
 - Fase 1 → `main`: https://github.com/AlbertoRVS/freemind/pull/1 (merge commit, 07/10/2026)
+- Fase 2 → `main`: https://github.com/AlbertoRVS/freemind/pull/2 (merge commit, 10/10/2026)
 
 ---
 
@@ -647,7 +648,58 @@ Lo que encontré en el proyecto vacío original:
 
 ## Fase 3 · Navegación
 
-_(sin fichas todavía)_
+### Actividad 3.1 · Añadir dependencias con el catálogo
+
+**Estado:** 📦 Subida (`b39c906`)  ·  **Revisión nº:** 1  ·  **Fecha:** 20/10/2026
+**Archivos:** `gradle/libs.versions.toml`, `build.gradle.kts`, `app/build.gradle.kts`
+
+> A petición de Alberto, el código de esta actividad lo escribió Claude directamente.
+
+#### Qué se añadió
+- `navigation-compose` **2.10.2** (última estable, 23/09/2026).
+- Plugin `kotlin.plugin.serialization` con la misma versión que Kotlin (`version.ref = "kotlin"`), declarado `apply false` en el raíz y aplicado en `app`.
+- `kotlinx-serialization-json` **1.9.0**. No es la última (1.12.0), pero las versiones 1.10 en adelante están compiladas con Kotlin 2.3/2.4 y el proyecto usa Kotlin 2.2.10. La 1.9.x es la última que requiere Kotlin 2.2.
+- `material-icons-extended` **sin versión**: la pone el BOM de Compose (1.7.8, ya no se actualiza más).
+
+#### ✅ Criterios de aceptación
+- [x] Gradle sincroniza sin errores
+
+#### 📦 Commit autorizado
+- [x] ✅ `chore(deps): add navigation, serialization and extended icons` (`b39c906`)
+
+
+### Actividad 3.2 · Rutas, `NavHost` y barra inferior
+
+**Estado:** ✅ Aprobada  ·  **Revisión nº:** 5  ·  **Fecha:** 21/10/2026
+**Archivos revisados:** `ui/navigation/` (Routes, FreeMindNavHost, BottomDestinations, FreeMindBottomBar), `ui/screens/` (4 pantallas), `MainActivity.kt`, `strings.xml`
+
+#### ✅ Criterios de aceptación
+- [x] Se navega entre las 4 pestañas y la seleccionada se marca (probado en el móvil)
+- [x] Pulsar "atrás" no apila la misma pantalla (`popUpTo` + `launchSingleTop`)
+
+#### 🌟 Lo que está bien
+- Las 4 rutas en un único `Routes.kt` como `@Serializable object`.
+- Las pantallas de tareas reutilizan `TaskListScreen` con `fakeTasks.filter { it.type == ... }`.
+- Barra con lista de destinos y `forEach`, sin repetir código.
+- Un solo `Scaffold` con `topBar` y `bottomBar`, y un único `navController` compartido por la barra y el `NavHost`.
+
+#### ❌ Errores corregidos durante la actividad
+1. `FreeMindNavHost` copiaba las rutas de recetas del ejemplo, con imports equivocados (`java.lang.reflect.Modifier`, `androidx.navigation.NavHost`).
+2. Alt+Enter volvió a añadir a Gradle un `material3` duplicado con versión fija; se deshizo con `git restore`.
+3. El contenido del `Scaffold` llamaba a la barra en lugar de al `NavHost`.
+
+#### 💡 Sugerencias (opcional)
+- `BottomDestinations` → `BottomDestination` (cada objeto es un destino).
+
+#### ❓ Observación de Alberto
+- Los checks se reinician al cambiar de pestaña: el `remember` se pierde al salir de la pantalla. Es esperado con datos falsos; se resolverá al guardar las completions en la BBDD (Fase 7).
+
+#### 🔁 Historial de revisiones
+- Rev. 5 (21/10): `NavHost` en el contenido del `Scaffold`. Funciona en el móvil. **Aprobada.**
+- Rev. 1-4 (20-21/10): rutas y pantallas bien; correcciones del `NavHost`, la dependencia duplicada, nombres copiados del ejemplo y textos en inglés.
+
+#### 📦 Commit autorizado
+- [x] ✅ Aprobada: `feat(nav): add bottom navigation with four screens`
 
 ## Fase 4 · Room
 

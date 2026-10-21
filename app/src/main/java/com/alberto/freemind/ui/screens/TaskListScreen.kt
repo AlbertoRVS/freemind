@@ -17,7 +17,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.alberto.freemind.domain.Task
 import com.alberto.freemind.ui.components.TaskCard
-import com.alberto.freemind.ui.fakeTasks
+import com.alberto.freemind.data.fakeTasks
 import com.alberto.freemind.ui.theme.FreeMindTheme
 
 

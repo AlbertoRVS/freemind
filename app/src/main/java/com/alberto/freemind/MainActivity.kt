@@ -15,8 +15,9 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import com.alberto.freemind.ui.fakeTasks
-import com.alberto.freemind.ui.screens.TaskListScreen
+import androidx.navigation.compose.rememberNavController
+import com.alberto.freemind.ui.navigation.FreeMindBottomBar
+import com.alberto.freemind.ui.navigation.FreeMindNavHost
 import com.alberto.freemind.ui.theme.FreeMindTheme
 
 class MainActivity : ComponentActivity() {
@@ -25,13 +26,15 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             FreeMindTheme {
+                val navController = rememberNavController()
                 Scaffold(
                     topBar = { FreeMindAppBar() },
+                    bottomBar = { FreeMindBottomBar(navController) },
                     modifier = Modifier.fillMaxSize()
                 ) { innerPadding ->
-                    TaskListScreen(
-                        tasks = fakeTasks,
-                        modifier = Modifier.padding(innerPadding)
+                    FreeMindNavHost(
+                        navController,
+                        Modifier.padding(innerPadding)
                     )
                 }
             }
